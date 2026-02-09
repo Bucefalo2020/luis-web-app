@@ -1,13 +1,24 @@
 import streamlit as st
 import google.generativeai as genai
 from google.generativeai.types import RequestOptions
+import os # <--- Importante para Railway
 
 st.set_page_config(page_title="Coach Luis - Zurich Santander", layout="wide")
 
 with st.sidebar:
     st.title("⚙️ Configuración")
-    api_key = st.text_input("Ingresa tu API Key de Google", type="password")
+    
+    # Buscamos la llave en Railway, si no está, habilitamos el cuadro de texto
+    api_key_env = os.environ.get("GOOGLE_API_KEY")
+    if api_key_env:
+        api_key = api_key_env
+        st.success("✅ API Key cargada")
+    else:
+        api_key = st.text_input("Ingresa tu API Key de Google", type="password")
+    
     modo = st.radio("Selecciona el Modo:", ["Taller", "Evaluador"])
+
+def llamar_a_luis(prompt_usuario, modo_seleccionado):
 
 def llamar_a_luis(prompt_usuario, modo_seleccionado):
     if not api_key:
