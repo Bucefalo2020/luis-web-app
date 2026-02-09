@@ -14,12 +14,12 @@ def llamar_a_luis(prompt_usuario, modo_seleccionado):
         return "⚠️ Por favor, ingresa tu API Key."
     
     try:
-        # 1. Configuración FORZANDO EL TRANSPORTE 'rest'
-        # Esto evita que la librería use rutas viejas como 'v1beta'
-        genai.configure(api_key=api_key, transport='rest') 
+        # 1. Configuración FORZANDO EL TRANSPORTE 'rest' y la API 'v1'
+        # Esto elimina el error 404 de v1beta definitivamente
+        genai.configure(api_key=api_key, transport='rest')
         
-        # 2. Forzamos la versión 1 explícitamente en el nombre del modelo
-        model = genai.GenerativeModel(model_name='models/gemini-1.5-flash')
+        # 2. Forzamos el modelo gemini-1.5-flash
+        model = genai.GenerativeModel('gemini-1.5-flash')
         
         instruccion_base = (
             "Eres Luis, Coach experto de Zurich Santander México. "
