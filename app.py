@@ -11,7 +11,7 @@ with st.sidebar:
 
 def llamar_a_luis(prompt_usuario, modo_seleccionado):
     if not api_key:
-        return "⚠️ Por favor, ingresa tu API Key."
+        return "⚠️ Por favor, ingresa tu API Key." 
     
     try:
         # 1. Configuración FORZANDO EL TRANSPORTE 'rest' y la API 'v1'
