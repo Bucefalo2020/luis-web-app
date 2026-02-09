@@ -16,7 +16,7 @@ def llamar_a_luis(prompt_usuario, modo_seleccionado):
     try:
         # 1. Configuración FORZANDO EL TRANSPORTE 'rest'
         # Esto evita que la librería use rutas viejas como 'v1beta'
-        genai.configure(api_key=api_key, transport='rest')
+        genai.configure(api_key=api_key, transport='rest') 
         
         # 2. Forzamos la versión 1 explícitamente en el nombre del modelo
         model = genai.GenerativeModel(model_name='models/gemini-1.5-flash')
