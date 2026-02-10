@@ -5,19 +5,14 @@ import os
 # 1. Configuración de página
 st.set_page_config(page_title="Coach Luis - Zurich Santander", layout="wide")
 
-# 2. Obtención de la llave (Prioridad Railway, luego Manual)
-api_key_env = os.environ.get("GOOGLE_API_KEY")
-with st.sidebar:
-    st.title("⚙️ Configuración")
-    api_key_input = st.text_input("Ingresa tu API Key de Google (opcional si está en Railway)", type="password")
-    modo = st.radio("Selecciona el Modo:", ["Taller", "Evaluador"])
+def llamar_a_luis(prompt_usuario, modo_seleccionado, api_key_manual):
+    # BUSCAMOS LA LLAVE JUSTO ANTES DE HABLAR CON GOOGLE
+    # Prioridad 1: Lo que escribas en la caja blanca
+    # Prioridad 2: Lo que guardaste en Railway
+    api_key_final = api_key_manual if api_key_manual else os.environ.get("GOOGLE_API_KEY")
 
-# La llave que usaremos finalmente
-api_key_final = api_key_input if api_key_input else api_key_env
-
-def llamar_a_luis(prompt_usuario, modo_seleccionado):
     if not api_key_final:
-        return "⚠️ Error: No se encontró la API Key. Por favor, revísala en Railway o la barra lateral."
+        return "⚠️ Error: No detecto tu llave. Asegúrate de que en Railway se llame GOOGLE_API_KEY."
     
     try:
         genai.configure(api_key=api_key_final, transport='rest')
@@ -33,23 +28,30 @@ def llamar_a_luis(prompt_usuario, modo_seleccionado):
     except Exception as e:
         return f"❌ Error de Conexión: {str(e)}"
 
-# 3. Interfaz de Chat
+# --- INTERFAZ ---
 st.title("🛡️ Coach Luis")
 
+with st.sidebar:
+    st.title("⚙️ Configuración")
+    # Capturamos la llave manual aquí
+    key_input = st.text_input("Ingresa tu API Key (opcional si está en Railway)", type="password")
+    modo = st.radio("Selecciona el Modo:", ["Taller", "Evaluador"])
+
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "¡Hola! Soy Luis. ¿En qué puedo ayudarte hoy con Hogar Protegido?"}]
+    st.session_state.messages = [{"role": "assistant", "content": "¡Hola! Soy Luis. ¿En qué puedo ayudarte hoy?"}]
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-if prompt := st.chat_input("Escribe tu duda técnica aquí..."):
+if prompt := st.chat_input("Escribe tu duda aquí..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
         with st.spinner("Luis está consultando los manuales..."):
-            respuesta = llamar_a_luis(prompt, modo)
+            # LE PASAMOS LA LLAVE MANUAL A LA FUNCIÓN
+            respuesta = llamar_a_luis(prompt, modo, key_input)
             st.markdown(respuesta)
             st.session_state.messages.append({"role": "assistant", "content": respuesta})
