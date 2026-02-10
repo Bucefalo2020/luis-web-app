@@ -3,7 +3,7 @@ import google.generativeai as genai
 import os
 
 # CONFIGURACIÓN DE PÁGINA
-st.set_page_config(page_title="Coach Luis - Zurich Santander", layout="wide")
+st.set_page_config(page_title="Coach Luis v2 - Zurich Santander", layout="wide")
 
 def llamar_a_luis(prompt_usuario, modo_seleccionado, api_key_manual):
     # Buscamos la llave en Railway o Manual
