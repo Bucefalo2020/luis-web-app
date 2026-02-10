@@ -19,14 +19,11 @@ with st.sidebar:
     modo = st.radio("Selecciona el Modo:", ["Taller", "Evaluador"])
 
 def llamar_a_luis(prompt_usuario, modo_seleccionado):
-    # if not api_key:
-    #     return "⚠️ Por favor, ingresa tu API Key."
-    
+    # Eliminamos el "if not api_key" para que use la de Railway directamente
     try:
-        # 1. Configuración FORZANDO EL TRANSPORTE 'rest'
+        # 1. Configuración usando la clave que Railway le inyecta
         genai.configure(api_key=api_key, transport='rest')
         
-        # 2. Forzamos el modelo gemini-1.5-flash
         model = genai.GenerativeModel('gemini-1.5-flash')
         
         instruccion_base = (
@@ -36,7 +33,6 @@ def llamar_a_luis(prompt_usuario, modo_seleccionado):
         
         contexto = f"{instruccion_base} Modo: {modo_seleccionado}."
         
-        # 3. Llamada directa
         response = model.generate_content(f"{contexto}\n\nUsuario: {prompt_usuario}")
         return response.text
 
