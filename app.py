@@ -13,22 +13,23 @@ def llamar_a_luis(prompt_usuario, modo_seleccionado, api_key_manual):
         return "⚠️ Error: No se encontró la API Key en Railway ni en la barra lateral."
     
     try:
-        # CAMBIO CLAVE: Quitamos 'transport=rest' y dejamos que use el default v1
+        # Forzamos la configuración para evitar el error 404 de v1beta
         genai.configure(api_key=api_key_final)
         
-        # Usamos el modelo con su nombre corto
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        # Usamos el modelo con su identificador estándar
+        model = genai.GenerativeModel(
+            model_name='gemini-1.5-flash'
+        )
         
         instruccion = (
             "Eres Luis, Coach experto de Zurich Santander México. "
             "Producto: Hogar Protegido 2020. Responde de forma amable y técnica."
         )
         
-        # Generar contenido
+        # Generar contenido de forma simple
         response = model.generate_content(f"{instruccion}\nModo: {modo_seleccionado}\nUsuario: {prompt_usuario}")
         return response.text
     except Exception as e:
-        # Si falla, intentamos un método alternativo de configuración
         return f"❌ Error de Conexión: {str(e)}"
 
 # --- INTERFAZ ---
