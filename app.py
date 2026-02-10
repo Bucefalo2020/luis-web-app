@@ -19,14 +19,11 @@ with st.sidebar:
     modo = st.radio("Selecciona el Modo:", ["Taller", "Evaluador"])
 
 def llamar_a_luis(prompt_usuario, modo_seleccionado):
-
-def llamar_a_luis(prompt_usuario, modo_seleccionado):
     if not api_key:
-        return "⚠️ Por favor, ingresa tu API Key." 
+        return "⚠️ Por favor, ingresa tu API Key."
     
     try:
-        # 1. Configuración FORZANDO EL TRANSPORTE 'rest' y la API 'v1'
-        # Esto elimina el error 404 de v1beta definitivamente
+        # 1. Configuración FORZANDO EL TRANSPORTE 'rest'
         genai.configure(api_key=api_key, transport='rest')
         
         # 2. Forzamos el modelo gemini-1.5-flash
@@ -38,13 +35,12 @@ def llamar_a_luis(prompt_usuario, modo_seleccionado):
         )
         
         contexto = f"{instruccion_base} Modo: {modo_seleccionado}."
-
+        
         # 3. Llamada directa
         response = model.generate_content(f"{contexto}\n\nUsuario: {prompt_usuario}")
         return response.text
 
     except Exception as e:
-        # Si esto falla con la nueva clave, el error nos dirá algo distinto a 404
         return f"❌ Error de Conexión: {str(e)}"
 
 # --- 4. INTERFAZ DE CHAT (Añade esto al final) ---
