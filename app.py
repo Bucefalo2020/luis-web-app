@@ -7,7 +7,8 @@ from google.api_core import client_options
 st.set_page_config(page_title="Coach Luis - Zurich Santander", layout="wide")
 
 def llamar_a_luis(prompt_usuario, modo_seleccionado, api_key_manual):
-    api_key_final = api_key_manual if api_key_manual else os.environ.get("GOOGLE_API_KEY")
+    # Cambiamos el nombre de la variable para romper el cache
+    api_key_final = api_key_manual if api_key_manual else os.environ.get("GEMINI_API_KEY")
 
     if not api_key_final:
         return "⚠️ Error: No se encontró la API Key en Railway."
