@@ -19,8 +19,8 @@ with st.sidebar:
     modo = st.radio("Selecciona el Modo:", ["Taller", "Evaluador"])
 
 def llamar_a_luis(prompt_usuario, modo_seleccionado):
-    if not api_key:
-        return "⚠️ Por favor, ingresa tu API Key."
+    # if not api_key:
+    #     return "⚠️ Por favor, ingresa tu API Key."
     
     try:
         # 1. Configuración FORZANDO EL TRANSPORTE 'rest'
