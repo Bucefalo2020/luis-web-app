@@ -1,64 +1,57 @@
 import streamlit as st
 import google.generativeai as genai
-from google.generativeai.types import RequestOptions
-import os # <--- Importante para Railway
+import os
 
-st.set_page_config(page_title="Coach Luis - Zurich Santander", layout="wide")
+# 1. Configuración de la API Key (Puente Railway-Streamlit)
+api_key_env = os.environ.get("GOOGLE_API_KEY")
+api_key_input = st.sidebar.text_input("Ingresa tu API Key de Google", type="password")
 
-with st.sidebar:
-    st.title("⚙️ Configuración")
-    
-    # Buscamos la llave en Railway, si no está, habilitamos el cuadro de texto
-    api_key_env = os.environ.get("GOOGLE_API_KEY")
-    if api_key_env:
-        api_key = api_key_env
-        st.success("✅ API Key cargada")
-    else:
-        api_key = st.text_input("Ingresa tu API Key de Google", type="password")
-    
-    modo = st.radio("Selecciona el Modo:", ["Taller", "Evaluador"])
+# Prioridad: Si hay algo en la caja usa eso, si no, usa lo de Railway
+api_key = api_key_input if api_key_input else api_key_env
 
 def llamar_a_luis(prompt_usuario, modo_seleccionado):
-    # Eliminamos el "if not api_key" para que use la de Railway directamente
+    # Si no hay llave en ningún lado, avisar
+    if not api_key:
+        return "⚠️ Por favor, configura la GOOGLE_API_KEY en Railway o ingrésala en la barra lateral."
+    
     try:
-        # 1. Configuración usando la clave que Railway le inyecta
+        # Configuración con transporte 'rest' para máxima compatibilidad
         genai.configure(api_key=api_key, transport='rest')
-        
         model = genai.GenerativeModel('gemini-1.5-flash')
         
         instruccion_base = (
             "Eres Luis, Coach experto de Zurich Santander México. "
-            "Producto: Hogar Protegido 2020. "
+            "Tu objetivo es ayudar con el producto Hogar Protegido 2020. "
+            "Responde de forma profesional, amable y precisa."
         )
         
-        contexto = f"{instruccion_base} Modo: {modo_seleccionado}."
+        contexto = f"{instruccion_base} Modo actual: {modo_seleccionado}."
         
+        # Llamada al modelo
         response = model.generate_content(f"{contexto}\n\nUsuario: {prompt_usuario}")
         return response.text
 
     except Exception as e:
         return f"❌ Error de Conexión: {str(e)}"
 
-# --- 4. INTERFAZ DE CHAT (Añade esto al final) ---
-st.title(f"🛡️ Coach Luis")
+# --- INTERFAZ DE STREAMLIT ---
+st.title("🛡️ Coach Luis")
+st.write("¡Hola! Soy Luis, tu Coach de Zurich Santander. ¿En qué te puedo ayudar hoy con Hogar Protegido?")
 
-# Mensaje de bienvenida inicial
+modo = st.sidebar.radio("Selecciona el Modo:", ["Taller", "Evaluador"])
+
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "¡Hola! Soy Luis, tu Coach de Zurich Santander. ¿En qué te puedo ayudar hoy con Hogar Protegido?"}]
+    st.session_state.messages = []
 
-# Mostrar el historial de mensajes
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Barra para escribir (Chat Input)
-if prompt := st.chat_input("Escribe tu duda técnica aquí..."):
-    # Mostrar mensaje del usuario
+if prompt := st.chat_input("Escribe tu duda aquí..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Obtener respuesta de Luis
     with st.chat_message("assistant"):
         with st.spinner("Luis está consultando los manuales..."):
             respuesta = llamar_a_luis(prompt, modo)
