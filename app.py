@@ -22,7 +22,12 @@ if not api_key_env:
 # Sidebar
 with st.sidebar:
     st.title("⚙️ Configuración")
-    api_key_input = st.text_input("API Key manual (opcional)", type="password")
+    api_key_input = st.text_input(
+    "API Key manual (optional)",
+    type="password",
+    key="api_key_input_field"
+)
+
     modo = st.radio("Modo:", ["Taller", "Evaluador"])
 
 api_key_final = api_key_input if api_key_input else api_key_env
