@@ -1,97 +1,123 @@
 import streamlit as st
 import os
+from pypdf import PdfReader
 from google import genai
 
-# ======================================================
-# Configuración página
-# ======================================================
+# --------------------------------------------------
+# CONFIGURACIÓN GENERAL
+# --------------------------------------------------
+
 st.set_page_config(
     page_title="Coach Luis - Zurich Santander",
     layout="wide"
 )
 
-# ======================================================
+# --------------------------------------------------
 # API KEY
-# ======================================================
-api_key_env = os.environ.get("GEMINI_API_KEY")
+# --------------------------------------------------
 
-if not api_key_env:
+api_key = os.environ.get("GEMINI_API_KEY")
+
+if not api_key:
     st.error("GEMINI_API_KEY no está definida en el entorno")
     st.stop()
 
-# Sidebar
+client = genai.Client(api_key=api_key)
+
+# --------------------------------------------------
+# CARGA DEL DOCUMENTO BASE (PDF)
+# --------------------------------------------------
+
+@st.cache_resource
+def cargar_documento():
+    ruta = "docs/ZuytULVsGrYSvmro_HogarProtegidoSantander_CondicionesGenerales.pdf"
+    reader = PdfReader(ruta)
+
+    texto = ""
+    for page in reader.pages:
+        contenido = page.extract_text()
+        if contenido:
+            texto += contenido + "\n"
+
+    return texto
+
+DOCUMENTO_BASE = cargar_documento()
+
+# --------------------------------------------------
+# SIDEBAR
+# --------------------------------------------------
+
 with st.sidebar:
     st.title("⚙️ Configuración")
-    api_key_input = st.text_input(
-    "API Key manual (optional)",
-    type="password",
-    key="api_key_input_field"
-)
+    modo = st.radio("Modo de respuesta:", ["Asesor", "Evaluador"])
 
-    modo = st.radio("Modo:", ["Taller", "Evaluador"])
+# --------------------------------------------------
+# FUNCIÓN PRINCIPAL IA
+# --------------------------------------------------
 
-api_key_final = api_key_input if api_key_input else api_key_env
-
-# ======================================================
-# Cliente Gemini moderno
-# ======================================================
-@st.cache_resource
-def get_client(api_key):
-    return genai.Client(api_key=api_key)
-
-client = get_client(api_key_final)
-
-# ======================================================
-# Motor de respuesta
-# ======================================================
 @st.cache_data(ttl=300)
-def llamar_a_luis(prompt_usuario, modo_sel):
+def llamar_a_luis(pregunta, modo):
 
-    if modo_sel == "Evaluador":
-        prompt_usuario = (
-            "Evalúa técnicamente lo siguiente:\n\n"
-            + prompt_usuario
-        )
+    contexto = DOCUMENTO_BASE[:12000]
 
-    system_prompt = (
-        "Eres Luis, Coach experto de Zurich Santander México. "
-        "Producto: Hogar Protegido 2020. "
-        "Responde de forma clara, profesional y técnica."
-    )
+    if modo == "Evaluador":
+        instruccion_modo = "Analiza técnicamente y evalúa la respuesta."
+    else:
+        instruccion_modo = "Responde como asesor experto."
+
+    system_prompt = f"""
+Eres Luis, coach experto del producto Hogar Protegido 2020 de Zurich Santander México.
+
+Reglas estrictas:
+- Responde SOLO usando información contenida en el documento
+- Si no está en el documento responde exactamente:
+"No encontré esa información en las condiciones generales."
+- Cuando cites cláusulas hazlo textual
+
+Documento:
+{contexto}
+
+Modo:
+{instruccion_modo}
+"""
 
     response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=f"{system_prompt}\n\n{prompt_usuario}"
+        model="gemini-1.5-flash",
+        contents=f"{system_prompt}\n\nPregunta del usuario: {pregunta}",
+        config={"temperature": 0.2}
     )
 
     return response.text
 
-# ======================================================
-# Interfaz
-# ======================================================
+# --------------------------------------------------
+# INTERFAZ CHAT
+# --------------------------------------------------
+
 st.title("🛡️ Coach Luis")
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant",
-         "content": "¡Hola! Soy Luis. ¿En qué puedo ayudarte hoy con Hogar Protegido?"}
+        {"role": "assistant", "content": "¡Hola! Soy Luis. ¿En qué puedo ayudarte hoy con Hogar Protegido?"}
     ]
 
-for m in st.session_state.messages:
-    with st.chat_message(m["role"]):
-        st.markdown(m["content"])
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
 
-if prompt := st.chat_input("Escribe tu duda técnica..."):
+if prompt := st.chat_input("Escribe tu pregunta técnica..."):
+
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        with st.spinner("Consultando manuales..."):
+        with st.spinner("Consultando documento oficial..."):
+
             respuesta = llamar_a_luis(prompt, modo)
+
             st.markdown(respuesta)
 
-    st.session_state.messages.append(
-        {"role": "assistant", "content": respuesta}
-    )
+            st.session_state.messages.append(
+                {"role": "assistant", "content": respuesta}
+            )
