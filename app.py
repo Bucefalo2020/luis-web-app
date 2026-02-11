@@ -38,7 +38,7 @@ def get_gemini_model(api_key: str):
         api_endpoint="generativelanguage.googleapis.com"
     )
     genai.configure(api_key=api_key, client_options=options)
-    return genai.GenerativeModel("gemini-1.5-flash")
+    return genai.GenerativeModel("gemini-pro")
 
 model = get_gemini_model(api_key_final)
 
