@@ -3,20 +3,26 @@ import google.generativeai as genai
 import os
 from google.api_core import client_options
 
-# 1. Configuración de página
+# =========================================================
+# 1. Configuración general de la página
+# =========================================================
 st.set_page_config(
     page_title="Coach Luis - Zurich Santander",
     layout="wide"
 )
 
-# 2. Obtención de la llave desde Railway
+# =========================================================
+# 2. Obtención de la API Key desde el entorno
+# =========================================================
 api_key_env = os.environ.get("GEMINI_API_KEY")
 
 if not api_key_env:
     st.error("GEMINI_API_KEY no está definida en el entorno")
     st.stop()
 
-# Sidebar
+# =========================================================
+# 3. Sidebar de configuración
+# =========================================================
 with st.sidebar:
     st.title("⚙️ Configuración")
     api_key_input = st.text_input(
@@ -28,55 +34,68 @@ with st.sidebar:
         ["Taller", "Evaluador"]
     )
 
-# API key efectiva
+# API Key efectiva (prioridad a input manual)
 api_key_final = api_key_input if api_key_input else api_key_env
 
-# 3. Inicialización del modelo (recurso cacheado)
+# =========================================================
+# 4. Inicialización del modelo Gemini (cacheado y versionado)
+# =========================================================
 @st.cache_resource
-def get_gemini_model(api_key: str):
+def get_gemini_model(api_key: str, model_version: str):
     options = client_options.ClientOptions(
         api_endpoint="generativelanguage.googleapis.com"
     )
-    genai.configure(api_key=api_key, client_options=options)
-    return genai.GenerativeModel("gemini-pro")
+    genai.configure(
+        api_key=api_key,
+        client_options=options
+    )
+    return genai.GenerativeModel(model_version)
 
-model = get_gemini_model(api_key_final)
+# ⚠️ El segundo parámetro invalida caches antiguos
+model = get_gemini_model(api_key_final, "gemini-pro")
 
-# 4. Llamada al modelo (datos cacheados)
+# =========================================================
+# 5. Función principal de inferencia (cache de datos)
+# =========================================================
 @st.cache_data(ttl=300)
 def llamar_a_luis(prompt_usuario: str, modo_seleccionado: str):
+    if modo_seleccionado == "Evaluador":
+        prompt_final = (
+            "Evalúa técnicamente lo siguiente, detectando errores, "
+            "omisiones y áreas de mejora:\n\n"
+            f"{prompt_usuario}"
+        )
+    else:
+        prompt_final = prompt_usuario
+
     instruccion = (
         "Eres Luis, Coach experto de Zurich Santander México. "
         "Producto: Hogar Protegido 2020. "
-        "Responde de forma amable, clara y técnica."
+        "Responde de forma clara, profesional y técnicamente precisa."
     )
 
-    if modo_seleccionado == "Evaluador":
-        prompt = f"EVALÚA LO SIGUIENTE:\n{prompt_usuario}"
-    else:
-        prompt = prompt_usuario
-
-    final_prompt = (
-        f"{instruccion}\n"
-        f"Modo: {modo_seleccionado}\n"
-        f"Usuario: {prompt}"
+    response = model.generate_content(
+        f"{instruccion}\n\n{prompt_final}"
     )
-
-    response = model.generate_content(final_prompt)
     return response.text
 
-# 5. Interfaz de chat
+# =========================================================
+# 6. Interfaz de chat
+# =========================================================
 st.title("🛡️ Coach Luis")
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {
             "role": "assistant",
-            "content": "¡Hola! Soy Luis. ¿En qué puedo ayudarte hoy con Hogar Protegido?"
+            "content": (
+                "¡Hola! Soy Luis. "
+                "¿En qué puedo ayudarte hoy con Hogar Protegido?"
+            )
         }
     ]
 
-# Mostrar historial
+# Mostrar historial de conversación
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
@@ -86,7 +105,6 @@ if prompt := st.chat_input("Escribe tu duda técnica aquí..."):
     st.session_state.messages.append(
         {"role": "user", "content": prompt}
     )
-
     with st.chat_message("user"):
         st.markdown(prompt)
 
