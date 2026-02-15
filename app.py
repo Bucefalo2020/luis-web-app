@@ -1075,8 +1075,8 @@ if modo in ["Asesor", "Evaluador"]:
     col1, col2 = st.columns([1,2])
 
     with col1:
-        st.markdown("<div style='margin-top:160px;'>", unsafe_allow_html=True)
-        st.image("assets/logo_zurich_santander_horizontal.png", width=250)
+        st.markdown("<div style='margin-top:110px;'>", unsafe_allow_html=True)
+        st.image("assets/logo_zurich_santander_horizontal.png", width=200)
         st.markdown("</div>", unsafe_allow_html=True)
 
     with col2:
