@@ -525,7 +525,7 @@ def generar_examen():
 
 def llamar_a_luis(pregunta, modo):
 
-    contexto = DOCUMENTO_BASE[:12000]
+    contexto = DOCUMENTO_BASE[:15000]
 
     if modo == "Evaluador":
         instruccion_modo = "Analiza técnicamente y evalúa la respuesta."
@@ -594,7 +594,7 @@ Devuelve únicamente JSON válido:
 
 def generar_preguntas_mc():
 
-    contexto = DOCUMENTO_BASE[:12000]
+    contexto = DOCUMENTO_BASE[:15000]
 
     prompt = f"""
 Eres un generador profesional de reactivos de certificación.
@@ -642,7 +642,7 @@ Documento base:
 
 def generar_preguntas_open():
 
-    contexto = DOCUMENTO_BASE[:12000]
+    contexto = DOCUMENTO_BASE[:15000]
 
     prompt = f"""
 Eres especialista en diseño de certificaciones técnicas.
