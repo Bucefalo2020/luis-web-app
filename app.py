@@ -1204,3 +1204,35 @@ if st.button("Enviar"):
             pregunta_usuario,
             respuesta
         )
+
+def get_recent_conversations(limit=10):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT question, response, created_at
+        FROM conversations
+        ORDER BY created_at DESC
+        LIMIT %s;
+    """, (limit,))
+
+    rows = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return rows
+
+st.markdown("---")
+st.markdown("### 📜 Historial reciente (Interno)")
+
+if st.checkbox("Mostrar historial interno"):
+    conversaciones = get_recent_conversations()
+
+    for c in conversaciones:
+        st.markdown(f"**Pregunta:** {c['question']}")
+        st.markdown(f"**Respuesta:** {c['response']}")
+        st.markdown(f"_Fecha:_ {c['created_at']}")
+        st.markdown("---")
+
+
