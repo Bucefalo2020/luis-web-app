@@ -62,6 +62,45 @@ if "db_initialized" not in st.session_state:
     init_db()
     st.session_state["db_initialized"] = True
 
+def ensure_demo_user():
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT id FROM users WHERE email = %s;", ("demo@demo.com",))
+    user = cur.fetchone()
+
+    if not user:
+        cur.execute("""
+            INSERT INTO users (email, password_hash, role)
+            VALUES (%s, %s, %s)
+            RETURNING id;
+        """, ("demo@demo.com", "demo_hash", "admin"))
+        user_id = cur.fetchone()["id"]
+        conn.commit()
+    else:
+        user_id = user["id"]
+
+    cur.close()
+    conn.close()
+
+    return user_id
+
+if "demo_user_id" not in st.session_state:
+    st.session_state["demo_user_id"] = ensure_demo_user()
+
+def save_conversation(user_id, question, response):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        INSERT INTO conversations (user_id, question, response)
+        VALUES (%s, %s, %s);
+    """, (user_id, question, response))
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
 # --------------------------------------------------
 # CONFIGURACIÓN API
 # --------------------------------------------------
@@ -1159,3 +1198,9 @@ if st.button("Enviar"):
     if pregunta_usuario:
         respuesta = llamar_a_luis(pregunta_usuario, modo)
         st.write(respuesta)
+
+        save_conversation(
+            st.session_state["demo_user_id"],
+            pregunta_usuario,
+            respuesta
+        )
