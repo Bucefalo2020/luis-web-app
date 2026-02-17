@@ -14,6 +14,53 @@ from reportlab.platypus import ListFlowable, ListItem
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
 from reportlab.lib.pagesizes import letter
+import psycopg2
+from psycopg2.extras import RealDictCursor
+
+def get_db_connection():
+    database_url = os.getenv("DATABASE_URL")
+    if not database_url:
+        raise Exception("DATABASE_URL no está configurada")
+
+    conn = psycopg2.connect(
+        database_url,
+        cursor_factory=RealDictCursor
+    )
+    return conn
+
+def init_db():
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Tabla usuarios
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            email VARCHAR(255) UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            role VARCHAR(50) DEFAULT 'user',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    """)
+
+    # Tabla conversaciones
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS conversations (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id),
+            question TEXT NOT NULL,
+            response TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    """)
+
+    conn.commit()
+    cur.close()
+    conn.close()
+    
+if "db_initialized" not in st.session_state:
+    init_db()
+    st.session_state["db_initialized"] = True
 
 # --------------------------------------------------
 # CONFIGURACIÓN API
