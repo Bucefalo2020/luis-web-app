@@ -1235,4 +1235,32 @@ if st.checkbox("Mostrar historial interno"):
         st.markdown(f"_Fecha:_ {c['created_at']}")
         st.markdown("---")
 
+def get_metrics():
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT 
+            COUNT(*) AS total_consultas,
+            MIN(created_at) AS primera_consulta,
+            MAX(created_at) AS ultima_consulta
+        FROM conversations;
+    """)
+
+    result = cur.fetchone()
+
+    cur.close()
+    conn.close()
+
+    return result
+
+st.markdown("### 📊 Métricas internas")
+
+if st.checkbox("Mostrar métricas"):
+    metrics = get_metrics()
+
+    st.write(f"Total consultas: {metrics['total_consultas']}")
+    st.write(f"Primera consulta: {metrics['primera_consulta']}")
+    st.write(f"Última consulta: {metrics['ultima_consulta']}")
+
 
