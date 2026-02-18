@@ -1204,56 +1204,50 @@ if modo == "Proceso de certificación":
 # PORTADA CORPORATIVA
 # --------------------------------------------------
 
-if modo in ["Asesor", "Evaluador"]:
+st.markdown("""
+<div style="
+    background-color:#E30613;
+    padding:10px 16px;
+    text-align:center;
+    border-radius:6px;
+">
+<h3 style="
+    color:white;
+    margin:0;
+    font-weight:700;
+    letter-spacing:0.5px;
+">
+SISTEMA DE CAPACITACIÓN Y CERTIFICACIÓN INTERNA
+</h3>
+</div>
+""", unsafe_allow_html=True)
 
-    st.markdown("""
-    <div style="
-        background-color:#E30613;
-        padding:10px 16px;
-        text-align:center;
-        border-radius:6px;
-    ">
-    <h3 style="
-        color:white;
-        margin:0;
-        font-weight:700;
-        letter-spacing:0.5px;
-    ">
-    SISTEMA DE CAPACITACIÓN Y CERTIFICACIÓN INTERNA
-    </h3>
-    </div>
-    """, unsafe_allow_html=True)
+st.markdown("<br>", unsafe_allow_html=True)
 
+col1, col2 = st.columns([1,2])
 
-    st.markdown("<br>", unsafe_allow_html=True)
+with col1:
+    st.markdown("<div style='margin-top:110px;'>", unsafe_allow_html=True)
+    st.image("assets/logo_zurich_santander_horizontal.png", width=200)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    col1, col2 = st.columns([1,2])
+with col2:
+    st.markdown(
+        """
+### Plataforma de Certificación Técnica – Hogar Protegido Santander
 
-    with col1:
-        st.markdown("<div style='margin-top:110px;'>", unsafe_allow_html=True)
-        st.image("assets/logo_zurich_santander_horizontal.png", width=200)
-        st.markdown("</div>", unsafe_allow_html=True)
+Sistema inteligente de entrenamiento técnico, evaluación
+y certificación para fuerza comercial.
 
-    with col2:
-        st.markdown(
-            """
-            ### Plataforma de Certificación técnica – Hogar Protegido Santander
-            
-            Sistema inteligente de entrenamiento técnico, evaluación
-            y certificación para fuerza comercial.
-            
-            **Funciones disponibles:**
-            - Consulta asistida por IA
-            - Evaluación técnica automatizada
-            - Certificación con reporte ejecutivo PDF
-            
-            ---
-            """,
-        )
+**Funciones disponibles:**
+- Consulta asistida por IA
+- Evaluación técnica automatizada
+- Certificación con reporte ejecutivo PDF
+"""
+    )
 
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    st.markdown("---")
+st.markdown("<br>", unsafe_allow_html=True)
+st.markdown("---")
 
 # --------------------------------------------------
 # CHAT
