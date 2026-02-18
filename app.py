@@ -1312,19 +1312,7 @@ def get_recent_conversations(limit=10):
     cur.close()
     conn.close()
 
-        return rows
-
-            st.markdown("---")
-            st.markdown("### 📜 Historial reciente (Interno)")
-
-        if st.checkbox("Mostrar historial interno"):
-            conversaciones = get_recent_conversations()
-
-            for c in conversaciones:
-                st.markdown(f"**Pregunta:** {c['question']}")
-                st.markdown(f"**Respuesta:** {c['response']}")
-                st.markdown(f"_Fecha:_ {c['created_at']}")
-                st.markdown("---")
+    return rows
 
 def get_metrics():
     conn = get_db_connection()
@@ -1343,5 +1331,5 @@ def get_metrics():
     cur.close()
     conn.close()
 
-        return result
+    return result
 
