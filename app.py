@@ -1046,20 +1046,6 @@ if "submitted" not in st.session_state:
 if "historial" not in st.session_state:
     st.session_state.historial = []
 
-
-# --------------------------------------------------
-# SIDEBAR
-# --------------------------------------------------
-
-with st.sidebar:
-    st.title("⚙️ Panel de configuración")
-    st.caption("Seleccione el entorno de operación.")
-
-    modo = st.radio(
-        "Entorno de operación:",
-        ["Consulta comercial", "Evaluación técnica", "Proceso de certificación"]
-    )
-
 # --------------------------------------------------
 # 🔐 CONTROL DE ACCESO
 # --------------------------------------------------
@@ -1087,14 +1073,27 @@ if not st.session_state["user"]:
             st.error("Acceso no autorizado. Verifique sus credenciales.")
 
     st.stop()
-    
-st.sidebar.markdown("---")
-st.sidebar.write(f"👤 Usuario ID: {st.session_state['user']['id']}")
-st.sidebar.write(f"🔑 Rol: {st.session_state['user']['role']}")
 
-if st.sidebar.button("Cerrar sesión"):
-    st.session_state["user"] = None
-    st.rerun()
+# --------------------------------------------------
+# SIDEBAR
+# --------------------------------------------------
+
+with st.sidebar:
+    st.title("⚙️ Panel de configuración")
+    st.caption("Seleccione el entorno de operación.")
+
+    modo = st.radio(
+        "Entorno de operación:",
+        ["Consulta comercial", "Evaluación técnica", "Proceso de certificación"]
+    )
+
+    st.markdown("---")
+    st.write(f"👤 Usuario ID: {st.session_state['user']['id']}")
+    st.write(f"🔑 Rol: {st.session_state['user']['role']}")
+
+    if st.button("Cerrar sesión"):
+        st.session_state["user"] = None
+        st.rerun()
 
 # --------------------------------------------------
 # CERTIFICACIÓN
