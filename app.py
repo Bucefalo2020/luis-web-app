@@ -16,6 +16,7 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.lib.pagesizes import letter
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import hashlib
 
 def get_db_connection():
     database_url = os.getenv("DATABASE_URL")
@@ -62,6 +63,9 @@ if "db_initialized" not in st.session_state:
     init_db()
     st.session_state["db_initialized"] = True
 
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
 def ensure_demo_user():
     conn = get_db_connection()
     cur = conn.cursor()
@@ -74,16 +78,23 @@ def ensure_demo_user():
             INSERT INTO users (email, password_hash, role)
             VALUES (%s, %s, %s)
             RETURNING id;
-        """, ("demo@demo.com", "demo_hash", "admin"))
+        """, ("demo@demo.com", hash_password("admin123"), "admin"))
         user_id = cur.fetchone()["id"]
-        conn.commit()
     else:
-        user_id = user["id"]
+        cur.execute("""
+            UPDATE users
+            SET password_hash = %s
+            WHERE email = %s
+            RETURNING id;
+        """, (hash_password("admin123"), "demo@demo.com"))
+        user_id = cur.fetchone()["id"]
 
+    conn.commit()
     cur.close()
     conn.close()
 
     return user_id
+
 
 if "demo_user_id" not in st.session_state:
     st.session_state["demo_user_id"] = ensure_demo_user()
