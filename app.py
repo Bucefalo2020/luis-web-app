@@ -1024,6 +1024,14 @@ if not st.session_state["user"]:
             st.error("Credenciales incorrectas")
 
     st.stop()
+    
+st.sidebar.markdown("---")
+st.sidebar.write(f"👤 Usuario ID: {st.session_state['user']['id']}")
+st.sidebar.write(f"🔑 Rol: {st.session_state['user']['role']}")
+
+if st.sidebar.button("Cerrar sesión"):
+    st.session_state["user"] = None
+    st.rerun()
 
 # --------------------------------------------------
 # CERTIFICACIÓN
