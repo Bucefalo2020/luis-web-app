@@ -646,7 +646,7 @@ def llamar_a_luis(pregunta, modo):
 
     contexto = DOCUMENTO_BASE[:15000]
 
-    if modo == "Evaluador":
+    if modo == "Evaluación técnica":
         instruccion_modo = "Analiza técnicamente y evalúa la respuesta."
     else:
         instruccion_modo = "Responde como asesor experto."
@@ -996,10 +996,12 @@ if "historial" not in st.session_state:
 # --------------------------------------------------
 
 with st.sidebar:
-    st.title("⚙️ Configuración")
+    st.title("⚙️ Panel de configuración")
+    st.caption("Seleccione el entorno de operación.")
+
     modo = st.radio(
-        "Modo de operación:",
-        ["Asesor", "Evaluador", "Certificación"]
+        "Entorno de operación:",
+        ["Consulta comercial", "Evaluación técnica", "Proceso de certificación"]
     )
 
 # 🔐 CONTROL DE ACCESO
@@ -1008,12 +1010,15 @@ if "user" not in st.session_state:
     st.session_state["user"] = None
 
 if not st.session_state["user"]:
-    st.title("🔐 Acceso al sistema")
+    st.title("Plataforma de Asistencia Inteligente")
+    st.markdown("### Acceso seguro")
+    st.caption("Uso exclusivo para personal autorizado.")
 
-    email = st.text_input("Email")
-    password = st.text_input("Password", type="password")
 
-    if st.button("Ingresar"):
+    email = st.text_input("Correo institucional")
+    password = st.text_input("Clave de acceso", type="password")
+
+    if st.button("Validar acceso"):
         user = authenticate_user(email, password)
 
         if user:
@@ -1021,7 +1026,7 @@ if not st.session_state["user"]:
             st.success("Acceso concedido")
             st.rerun()
         else:
-            st.error("Credenciales incorrectas")
+            st.error("Acceso no autorizado. Verifique sus credenciales.")
 
     st.stop()
     
@@ -1037,7 +1042,7 @@ if st.sidebar.button("Cerrar sesión"):
 # CERTIFICACIÓN
 # --------------------------------------------------
 
-if modo == "Certificación":
+if modo == "Proceso de certificación":
 
     nombre = st.text_input("Nombre del evaluado")
 
@@ -1254,20 +1259,42 @@ if modo in ["Asesor", "Evaluador"]:
 # CHAT
 # --------------------------------------------------
 
-st.markdown("### Asistente Inteligente – Coach Luis")
+if modo == "Consulta comercial":
 
-pregunta_usuario = st.text_input("Escribe tu pregunta:")
+    st.markdown("### Motor de Asistencia Documental")
+    st.caption("Respuestas generadas exclusivamente con base en documentación oficial vigente.")
 
-if st.button("Enviar"):
-    if pregunta_usuario:
-        respuesta = llamar_a_luis(pregunta_usuario, modo)
-        st.write(respuesta)
+    pregunta_usuario = st.text_input("Escribe tu pregunta:")
 
-        save_conversation(
-            st.session_state["demo_user_id"],
-            pregunta_usuario,
-            respuesta
-        )
+    if st.button("Enviar"):
+        if pregunta_usuario:
+            respuesta = llamar_a_luis(pregunta_usuario, modo)
+            st.write(respuesta)
+
+            save_conversation(
+                st.session_state["demo_user_id"],
+                pregunta_usuario,
+                respuesta
+            )
+
+    st.markdown("---")
+    st.markdown("### 📜 Registro de interacciones (Auditoría interna)")
+
+    if st.checkbox("Visualizar registro operativo"):
+        conversaciones = get_recent_conversations()
+        for c in conversaciones:
+            st.markdown(f"**Pregunta:** {c['question']}")
+            st.markdown(f"**Respuesta:** {c['response']}")
+            st.markdown(f"_Fecha:_ {c['created_at']}")
+            st.markdown("---")
+
+    st.markdown("### 📊 Indicadores operativos del sistema")
+
+    if st.checkbox("Visualizar indicadores de desempeño"):
+        metrics = get_metrics()
+        st.write(f"Total consultas: {metrics['total_consultas']}")
+        st.write(f"Primera consulta: {metrics['primera_consulta']}")
+        st.write(f"Última consulta: {metrics['ultima_consulta']}")
 
 def get_recent_conversations(limit=10):
     conn = get_db_connection()
@@ -1285,19 +1312,19 @@ def get_recent_conversations(limit=10):
     cur.close()
     conn.close()
 
-    return rows
+        return rows
 
-st.markdown("---")
-st.markdown("### 📜 Historial reciente (Interno)")
+            st.markdown("---")
+            st.markdown("### 📜 Historial reciente (Interno)")
 
-if st.checkbox("Mostrar historial interno"):
-    conversaciones = get_recent_conversations()
+        if st.checkbox("Mostrar historial interno"):
+            conversaciones = get_recent_conversations()
 
-    for c in conversaciones:
-        st.markdown(f"**Pregunta:** {c['question']}")
-        st.markdown(f"**Respuesta:** {c['response']}")
-        st.markdown(f"_Fecha:_ {c['created_at']}")
-        st.markdown("---")
+            for c in conversaciones:
+                st.markdown(f"**Pregunta:** {c['question']}")
+                st.markdown(f"**Respuesta:** {c['response']}")
+                st.markdown(f"_Fecha:_ {c['created_at']}")
+                st.markdown("---")
 
 def get_metrics():
     conn = get_db_connection()
@@ -1316,15 +1343,5 @@ def get_metrics():
     cur.close()
     conn.close()
 
-    return result
-
-st.markdown("### 📊 Métricas internas")
-
-if st.checkbox("Mostrar métricas"):
-    metrics = get_metrics()
-
-    st.write(f"Total consultas: {metrics['total_consultas']}")
-    st.write(f"Primera consulta: {metrics['primera_consulta']}")
-    st.write(f"Última consulta: {metrics['ultima_consulta']}")
-
+        return result
 
