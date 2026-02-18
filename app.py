@@ -95,6 +95,28 @@ def ensure_demo_user():
 
     return user_id
 
+def authenticate_user(email, password):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT id, password_hash, role
+        FROM users
+        WHERE email = %s;
+    """, (email,))
+
+    user = cur.fetchone()
+
+    cur.close()
+    conn.close()
+
+    if user and user["password_hash"] == hash_password(password):
+        return {
+            "id": user["id"],
+            "role": user["role"]
+        }
+
+    return None
 
 if "demo_user_id" not in st.session_state:
     st.session_state["demo_user_id"] = ensure_demo_user()
@@ -979,6 +1001,29 @@ with st.sidebar:
         "Modo de operación:",
         ["Asesor", "Evaluador", "Certificación"]
     )
+
+# 🔐 CONTROL DE ACCESO
+
+if "user" not in st.session_state:
+    st.session_state["user"] = None
+
+if not st.session_state["user"]:
+    st.title("🔐 Acceso al sistema")
+
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
+
+    if st.button("Ingresar"):
+        user = authenticate_user(email, password)
+
+        if user:
+            st.session_state["user"] = user
+            st.success("Acceso concedido")
+            st.rerun()
+        else:
+            st.error("Credenciales incorrectas")
+
+    st.stop()
 
 # --------------------------------------------------
 # CERTIFICACIÓN
