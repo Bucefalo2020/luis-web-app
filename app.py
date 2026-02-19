@@ -1295,6 +1295,10 @@ if modo == "Evaluación técnica":
                 respuesta_modelo
             )
 
+            # 🔎 DEBUG TEMPORAL
+            st.write("DEBUG RESULTADO CRUDO:")
+            st.write(resultado)
+
             st.markdown("### 📊 Resultado de evaluación")
 
             try:
