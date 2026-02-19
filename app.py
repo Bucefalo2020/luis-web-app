@@ -1446,3 +1446,28 @@ def get_metrics():
 
     return result
 
+# --------------------------------------------------
+# 📊 MÉTRICAS TÉCNICAS AVANZADAS
+# --------------------------------------------------
+
+def get_technical_metrics():
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT 
+            COUNT(*) AS total,
+            AVG(score) AS promedio,
+            SUM(CASE WHEN score = 2 THEN 1 ELSE 0 END) AS correctas,
+            SUM(CASE WHEN score = 1 THEN 1 ELSE 0 END) AS parciales,
+            SUM(CASE WHEN score = 0 THEN 1 ELSE 0 END) AS incorrectas
+        FROM technical_evaluations;
+    """)
+
+    result = cur.fetchone()
+
+    cur.close()
+    conn.close()
+
+    return result
+
