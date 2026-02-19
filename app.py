@@ -111,6 +111,20 @@ def init_db():
         );
     """)
 
+    # Tabla evaluaciones técnicas
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS technical_evaluations (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id),
+            pregunta TEXT NOT NULL,
+            respuesta_usuario TEXT NOT NULL,
+            respuesta_modelo TEXT NOT NULL,
+            score INTEGER NOT NULL,
+            feedback TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    """)
+
     conn.commit()
     cur.close()
     conn.close()
