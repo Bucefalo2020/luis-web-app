@@ -204,6 +204,20 @@ def save_conversation(user_id, question, response):
     cur.close()
     conn.close()
 
+def save_technical_evaluation(user_id, pregunta, respuesta_usuario, respuesta_modelo, score, feedback):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        INSERT INTO technical_evaluations
+        (user_id, pregunta, respuesta_usuario, respuesta_modelo, score, feedback)
+        VALUES (%s, %s, %s, %s, %s, %s);
+    """, (user_id, pregunta, respuesta_usuario, respuesta_modelo, score, feedback))
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
 # --------------------------------------------------
 # CONFIGURACIÓN API
 # --------------------------------------------------
