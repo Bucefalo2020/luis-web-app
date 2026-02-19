@@ -1302,24 +1302,32 @@ if modo == "Evaluación técnica":
             st.markdown("### 📊 Resultado de evaluación")
 
             try:
+                import re
                 import json
-                data = json.loads(resultado)
+
+                json_match = re.search(r"\{.*\}", resultado, re.DOTALL)
+
+                if json_match:
+                    data = json.loads(json_match.group())
+                else:
+                    raise ValueError("No se encontró JSON válido")
 
                 score = data.get("score")
                 feedback = data.get("feedback")
 
                 if score == 2:
-                    st.success(f"Score: {score} — Respuesta correcta")
+                    st.success(f"Score: {score} – Respuesta correcta")
                 elif score == 1:
-                    st.warning(f"Score: {score} — Respuesta parcialmente correcta")
+                    st.warning(f"Score: {score} – Respuesta parcialmente correcta")
                 else:
-                    st.error(f"Score: {score} — Respuesta incorrecta")
+                    st.error(f"Score: {score} – Respuesta incorrecta")
 
                 st.markdown("**Retroalimentación técnica:**")
                 st.write(feedback)
 
-            except:
+            except Exception as e:
                 st.error("No se pudo interpretar el resultado de evaluación.")
+                st.write("Detalle técnico:", e)
 
 if modo == "Consulta comercial":
 
