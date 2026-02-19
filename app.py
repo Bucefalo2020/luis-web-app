@@ -1261,6 +1261,61 @@ if modo == "Proceso de certificación":
 # CHAT
 # --------------------------------------------------
 
+# --------------------------------------------------
+# 🧪 EVALUACIÓN TÉCNICA
+# --------------------------------------------------
+
+if modo == "Evaluación técnica":
+
+    st.markdown("## 🧪 Evaluación Técnica Individual")
+    st.caption("Módulo de medición objetiva de conocimiento técnico.")
+
+    pregunta_eval = st.text_input("Ingrese la pregunta técnica a evaluar:")
+
+    respuesta_usuario = st.text_area(
+        "Respuesta del evaluado:",
+        height=150
+    )
+
+    if st.button("Evaluar desempeño técnico"):
+
+        if pregunta_eval and respuesta_usuario:
+
+            # 1️⃣ Generar respuesta modelo
+            respuesta_modelo = llamar_a_luis(
+                pregunta_eval,
+                "Evaluación técnica"
+            )
+
+            # 2️⃣ Evaluar respuesta del usuario
+            resultado = evaluar_respuesta_abierta(
+                pregunta_eval,
+                respuesta_usuario,
+                respuesta_modelo
+            )
+
+            st.markdown("### 📊 Resultado de evaluación")
+
+            try:
+                import json
+                data = json.loads(resultado)
+
+                score = data.get("score")
+                feedback = data.get("feedback")
+
+                if score == 2:
+                    st.success(f"Score: {score} — Respuesta correcta")
+                elif score == 1:
+                    st.warning(f"Score: {score} — Respuesta parcialmente correcta")
+                else:
+                    st.error(f"Score: {score} — Respuesta incorrecta")
+
+                st.markdown("**Retroalimentación técnica:**")
+                st.write(feedback)
+
+            except:
+                st.error("No se pudo interpretar el resultado de evaluación.")
+
 if modo == "Consulta comercial":
 
     st.markdown("### Motor de Asistencia Documental")
