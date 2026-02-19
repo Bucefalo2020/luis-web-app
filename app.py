@@ -1371,7 +1371,18 @@ if modo == "Evaluación técnica":
             except Exception as e:
                 st.error("No se pudo interpretar el resultado de evaluación.")
                 st.write("Detalle técnico:", e)
+                
+            st.markdown("---")
+            st.markdown("### 📈 Indicadores de desempeño técnico")
 
+            metricas_eval = get_metrics_evaluacion()
+
+            if metricas_eval and metricas_eval["total_evaluaciones"] > 0:
+                st.write(f"Total evaluaciones: {metricas_eval['total_evaluaciones']}")
+                st.write(f"Promedio score: {round(metricas_eval['promedio_score'], 2)}")
+            else:
+                st.info("Aún no existen evaluaciones registradas.")
+            
 if modo == "Consulta comercial":
 
     st.markdown("### Motor de Asistencia Documental")
