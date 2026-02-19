@@ -1278,6 +1278,7 @@ if modo == "Evaluación técnica":
     )
 
     if st.button("Evaluar desempeño técnico"):
+        st.write("Botón ejecutado")
 
         if pregunta_eval and respuesta_usuario:
 
