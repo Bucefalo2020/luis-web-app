@@ -1338,6 +1338,26 @@ if modo == "Evaluación técnica":
                 score = data.get("score")
                 feedback = data.get("feedback")
 
+                # 💾 Guardar evaluación técnica en DB
+                conn = get_db_connection()
+                cur = conn.cursor()
+
+                cur.execute("""
+                    INSERT INTO technical_evaluations
+                    (user_id, question, user_answer, score, feedback)
+                    VALUES (%s, %s, %s, %s, %s);
+                """, (
+                    st.session_state["user"]["id"],
+                    pregunta_eval,
+                    respuesta_usuario,
+                    score,
+                    feedback
+                ))
+
+                conn.commit()
+                cur.close()
+                conn.close()
+
                 if score == 2:
                     st.success(f"Score: {score} – Respuesta correcta")
                 elif score == 1:
