@@ -1278,7 +1278,6 @@ if modo == "Evaluación técnica":
     )
 
     if st.button("Evaluar desempeño técnico"):
-        st.write("Botón ejecutado")
 
         if pregunta_eval and respuesta_usuario:
 
@@ -1294,10 +1293,6 @@ if modo == "Evaluación técnica":
                 respuesta_usuario,
                 respuesta_modelo
             )
-
-            # 🔎 DEBUG TEMPORAL
-            st.write("DEBUG RESULTADO CRUDO:")
-            st.write(resultado)
 
             st.markdown("### 📊 Resultado de evaluación")
 
