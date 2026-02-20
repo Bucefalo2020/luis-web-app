@@ -218,6 +218,43 @@ def save_technical_evaluation(user_id, pregunta, respuesta_usuario, respuesta_mo
     cur.close()
     conn.close()
 
+def get_recent_conversations(limit=10):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT question, response, created_at
+        FROM conversations
+        ORDER BY created_at DESC
+        LIMIT %s;
+    """, (limit,))
+
+    rows = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return rows
+
+def get_metrics():
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT 
+            COUNT(*) AS total_consultas,
+            MIN(created_at) AS primera_consulta,
+            MAX(created_at) AS ultima_consulta
+        FROM conversations;
+    """)
+
+    result = cur.fetchone()
+
+    cur.close()
+    conn.close()
+
+    return result
+ 
 # --------------------------------------------------
 # CONFIGURACIÓN API
 # --------------------------------------------------
@@ -1461,42 +1498,6 @@ if modo == "Consulta comercial":
         st.write(f"Primera consulta: {metrics['primera_consulta']}")
         st.write(f"Última consulta: {metrics['ultima_consulta']}")
 
-def get_recent_conversations(limit=10):
-    conn = get_db_connection()
-    cur = conn.cursor()
-
-    cur.execute("""
-        SELECT question, response, created_at
-        FROM conversations
-        ORDER BY created_at DESC
-        LIMIT %s;
-    """, (limit,))
-
-    rows = cur.fetchall()
-
-    cur.close()
-    conn.close()
-
-    return rows
-
-def get_metrics():
-    conn = get_db_connection()
-    cur = conn.cursor()
-
-    cur.execute("""
-        SELECT 
-            COUNT(*) AS total_consultas,
-            MIN(created_at) AS primera_consulta,
-            MAX(created_at) AS ultima_consulta
-        FROM conversations;
-    """)
-
-    result = cur.fetchone()
-
-    cur.close()
-    conn.close()
-
-    return result
 
 
 
