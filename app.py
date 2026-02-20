@@ -1374,13 +1374,25 @@ if modo == "Evaluación técnica":
                 st.write("Detalle técnico:", e)
                 
             st.markdown("---")
-            st.markdown("### 📈 Indicadores de desempeño técnico")
+            st.markdown("### 📊 Indicadores de desempeño técnico")
 
-            metricas_eval = get_metrics_evaluacion()
+            metricas_eval = get_technical_metrics()
 
-            if metricas_eval and metricas_eval["total_evaluaciones"] > 0:
-                st.write(f"Total evaluaciones: {metricas_eval['total_evaluaciones']}")
-                st.write(f"Promedio score: {round(metricas_eval['promedio_score'], 2)}")
+            if metricas_eval and metricas_eval["total"] > 0:
+
+                total = metricas_eval["total"]
+                promedio = round(metricas_eval["promedio"], 2) if metricas_eval["promedio"] else 0
+                correctas = metricas_eval["correctas"]
+                parciales = metricas_eval["parciales"]
+                incorrectas = metricas_eval["incorrectas"]
+
+                st.write(f"Total evaluaciones: {total}")
+                st.write(f"Promedio score: {promedio}")
+
+                st.write(f"🟢 Correctas: {correctas}")
+                st.write(f"🟡 Parciales: {parciales}")
+                st.write(f"🔴 Incorrectas: {incorrectas}")
+
             else:
                 st.info("Aún no existen evaluaciones registradas.")
             
