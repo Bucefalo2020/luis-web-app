@@ -1430,13 +1430,6 @@ if modo == "Consulta comercial":
 
     if st.button("Enviar"):
         if pregunta_usuario:
-
-            # 🔎 PRUEBA TEMPORAL
-            if "Terminación anticipada" in DOCUMENTO_BASE:
-                st.write("Encontrado literal en DOCUMENTO_BASE")
-            else:
-                st.write("No encontrado literal en DOCUMENTO_BASE")
-
             respuesta = llamar_a_luis(pregunta_usuario, modo)
             st.write(respuesta)
             
