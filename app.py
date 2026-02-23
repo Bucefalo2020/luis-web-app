@@ -18,6 +18,7 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import hashlib
 from core.loader import load_questions_from_json
+import random
 
 # CONFIGURACIÓN GLOBAL DE LA APP
 st.set_page_config(
@@ -1370,7 +1371,7 @@ if modo == "Proceso de certificación":
 # --------------------------------------------------
 
 # --------------------------------------------------
-# 🧪 EVALUACIÓN TÉCNICA
+# 🧪 MODO DE EVALUACIÓN
 # --------------------------------------------------
 
 if modo == "Evaluación técnica":
@@ -1378,7 +1379,23 @@ if modo == "Evaluación técnica":
     st.markdown("## 🧪 Evaluación Técnica Individual")
     st.caption("Módulo de medición objetiva de conocimiento técnico.")
 
+   modo_evaluacion = st.radio(
+    "Modo de evaluación",
+    ["Manual", "Automática (Banco ARQ-MIC Nivel 1)"]
+)
+
+if modo_evaluacion == "Manual":
     pregunta_eval = st.text_input("Ingrese la pregunta técnica a evaluar:")
+else:
+    if ARQ_MIC_NIVEL1:
+        pregunta_seleccionada = random.choice(ARQ_MIC_NIVEL1)
+        pregunta_eval = pregunta_seleccionada["pregunta"]
+
+        st.markdown("### 📌 Pregunta asignada automáticamente:")
+        st.info(pregunta_eval)
+    else:
+        st.error("No hay preguntas disponibles en el banco.")
+        pregunta_eval = ""
 
     respuesta_usuario = st.text_area(
         "Respuesta del evaluado:",
