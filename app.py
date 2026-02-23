@@ -17,12 +17,20 @@ from reportlab.lib.pagesizes import letter
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import hashlib
+from core.loader import load_questions_from_json
 
 # CONFIGURACIÓN GLOBAL DE LA APP
 st.set_page_config(
     page_title="Plataforma de Asistencia Inteligente",
     layout="wide",
     page_icon="🏢"
+)
+
+# -------------------------------
+# CARGA BANCO EXTERNO (FASE 1)
+# -------------------------------
+ARQ_MIC_NIVEL1 = load_questions_from_json(
+    "question_bank/arquitectura/arq_mic_nivel1.json"
 )
 
 # --------------------------------------------------
@@ -73,6 +81,16 @@ y certificación para fuerza comercial.
 
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown("---")
+
+# ---------------------------------
+# PRUEBA BANCO EXTERNO (TEMPORAL)
+# ---------------------------------
+st.subheader("Prueba banco externo ARQ-MIC Nivel 1")
+
+if ARQ_MIC_NIVEL1:
+    pregunta_demo = ARQ_MIC_NIVEL1[0]
+    st.write("Pregunta desde JSON externo:")
+    st.write(pregunta_demo["pregunta"])
 
 def get_db_connection():
     database_url = os.getenv("DATABASE_URL")

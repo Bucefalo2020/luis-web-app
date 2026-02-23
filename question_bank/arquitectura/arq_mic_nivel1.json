@@ -1,0 +1,102 @@
+[
+  {
+    "id": "C-ARQ-1-001",
+    "version": "1.0",
+    "nivel": 1,
+    "tematica": "arquitectura",
+    "subtematica": "ARQ-MIC",
+    "tipo": "multiple_choice",
+    "dificultad_teorica": 0.35,
+    "estado": "activo",
+    "tags": ["microservicios", "conceptos_base"],
+    "pregunta": "¿Cuál es una característica fundamental de una arquitectura de microservicios?",
+    "opciones": [
+      "Todos los módulos comparten la misma base de datos obligatoriamente",
+      "Cada servicio es desplegado y escalado de manera independiente",
+      "La aplicación debe ejecutarse en un único contenedor",
+      "El sistema requiere un único lenguaje de programación"
+    ],
+    "respuesta_correcta": "Cada servicio es desplegado y escalado de manera independiente",
+    "explicacion_tecnica": "La independencia de despliegue y escalabilidad es uno de los principios centrales de microservicios."
+  },
+  {
+    "id": "C-ARQ-1-002",
+    "version": "1.0",
+    "nivel": 1,
+    "tematica": "arquitectura",
+    "subtematica": "ARQ-MIC",
+    "tipo": "multiple_choice",
+    "dificultad_teorica": 0.40,
+    "estado": "activo",
+    "tags": ["acoplamiento", "arquitectura"],
+    "pregunta": "¿Cuál es el objetivo principal al diseñar microservicios con bajo acoplamiento?",
+    "opciones": [
+      "Permitir que todos los servicios compartan lógica interna",
+      "Reducir la dependencia entre servicios para facilitar cambios independientes",
+      "Centralizar todas las decisiones en un servicio principal",
+      "Eliminar la necesidad de comunicación entre servicios"
+    ],
+    "respuesta_correcta": "Reducir la dependencia entre servicios para facilitar cambios independientes",
+    "explicacion_tecnica": "El bajo acoplamiento permite evolución independiente y menor impacto ante cambios."
+  },
+  {
+    "id": "C-ARQ-1-003",
+    "version": "1.0",
+    "nivel": 1,
+    "tematica": "arquitectura",
+    "subtematica": "ARQ-MIC",
+    "tipo": "multiple_choice",
+    "dificultad_teorica": 0.38,
+    "estado": "activo",
+    "tags": ["bases_de_datos", "principios"],
+    "pregunta": "En una arquitectura de microservicios bien diseñada, ¿cómo se recomienda gestionar las bases de datos?",
+    "opciones": [
+      "Una base de datos única compartida por todos los servicios",
+      "Cada servicio debe tener control sobre su propia base de datos",
+      "Todas las consultas deben pasar por un servicio central",
+      "Las bases de datos deben ser siempre relacionales"
+    ],
+    "respuesta_correcta": "Cada servicio debe tener control sobre su propia base de datos",
+    "explicacion_tecnica": "La autonomía de datos evita dependencias rígidas y permite escalabilidad independiente."
+  },
+  {
+    "id": "C-ARQ-1-004",
+    "version": "1.0",
+    "nivel": 1,
+    "tematica": "arquitectura",
+    "subtematica": "ARQ-MIC",
+    "tipo": "multiple_choice",
+    "dificultad_teorica": 0.42,
+    "estado": "activo",
+    "tags": ["comunicacion", "api"],
+    "pregunta": "¿Cuál es un mecanismo común de comunicación entre microservicios?",
+    "opciones": [
+      "Acceso directo a la memoria de otros servicios",
+      "Intercambio de archivos manual",
+      "APIs HTTP o mensajería basada en eventos",
+      "Conexión directa al código fuente de otro servicio"
+    ],
+    "respuesta_correcta": "APIs HTTP o mensajería basada en eventos",
+    "explicacion_tecnica": "Los microservicios suelen comunicarse mediante protocolos estándar como HTTP/REST o mediante sistemas de mensajería."
+  },
+  {
+    "id": "C-ARQ-1-005",
+    "version": "1.0",
+    "nivel": 1,
+    "tematica": "arquitectura",
+    "subtematica": "ARQ-MIC",
+    "tipo": "multiple_choice",
+    "dificultad_teorica": 0.45,
+    "estado": "activo",
+    "tags": ["escalabilidad", "arquitectura_distribuida"],
+    "pregunta": "¿Cuál es una ventaja clave de los microservicios frente a un monolito tradicional?",
+    "opciones": [
+      "Requieren menos infraestructura",
+      "Permiten escalar componentes específicos según la demanda",
+      "Eliminan completamente la complejidad operativa",
+      "No necesitan monitoreo"
+    ],
+    "respuesta_correcta": "Permiten escalar componentes específicos según la demanda",
+    "explicacion_tecnica": "La escalabilidad selectiva permite optimizar recursos y responder mejor a variaciones de carga."
+  }
+]
