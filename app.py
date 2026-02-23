@@ -82,16 +82,6 @@ y certificación para fuerza comercial.
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown("---")
 
-# ---------------------------------
-# PRUEBA BANCO EXTERNO (TEMPORAL)
-# ---------------------------------
-st.subheader("Prueba banco externo ARQ-MIC Nivel 1")
-
-if ARQ_MIC_NIVEL1:
-    pregunta_demo = ARQ_MIC_NIVEL1[0]
-    st.write("Pregunta desde JSON externo:")
-    st.write(pregunta_demo["pregunta"])
-
 def get_db_connection():
     database_url = os.getenv("DATABASE_URL")
     if not database_url:
@@ -1181,6 +1171,16 @@ if not st.session_state["user"]:
             st.error("Acceso no autorizado. Verifique sus credenciales.")
 
     st.stop()
+
+# ---------------------------------
+# PRUEBA BANCO EXTERNO (TEMPORAL)
+# ---------------------------------
+st.subheader("Prueba banco externo ARQ-MIC Nivel 1")
+
+if ARQ_MIC_NIVEL1:
+    pregunta_demo = ARQ_MIC_NIVEL1[0]
+    st.write("Pregunta desde JSON externo:")
+    st.write(pregunta_demo["pregunta"])
 
 # --------------------------------------------------
 # SIDEBAR
