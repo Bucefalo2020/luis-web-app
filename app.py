@@ -1379,7 +1379,7 @@ if modo == "Evaluación técnica":
     st.markdown("## 🧪 Evaluación Técnica Individual")
     st.caption("Módulo de medición objetiva de conocimiento técnico.")
 
-    # ---------------------------------
+# ---------------------------------
 # PREGUNTA AUTOMÁTICA (BANCO ESTRUCTURADO)
 # ---------------------------------
 if ARQ_MIC_NIVEL1:
@@ -1402,7 +1402,7 @@ respuesta_usuario = st.text_area(
     height=150
 )
 
-    if st.button("Evaluar desempeño técnico"):
+if st.button("Evaluar desempeño técnico"):
 
         if pregunta_eval and respuesta_usuario:
 
