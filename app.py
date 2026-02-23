@@ -1379,28 +1379,28 @@ if modo == "Evaluación técnica":
     st.markdown("## 🧪 Evaluación Técnica Individual")
     st.caption("Módulo de medición objetiva de conocimiento técnico.")
 
-    modo_evaluacion = st.radio(
-        "Modo de evaluación",
-        ["Manual", "Automática (Banco ARQ-MIC Nivel 1)"]
-    )
+    # ---------------------------------
+# PREGUNTA AUTOMÁTICA (BANCO ESTRUCTURADO)
+# ---------------------------------
+if ARQ_MIC_NIVEL1:
 
-    if modo_evaluacion == "Manual":
-        pregunta_eval = st.text_input("Ingrese la pregunta técnica a evaluar:")
-    else:
-        if ARQ_MIC_NIVEL1:
-            pregunta_seleccionada = random.choice(ARQ_MIC_NIVEL1)
-            pregunta_eval = pregunta_seleccionada["pregunta"]
+    # Fijar pregunta en sesión para que no cambie en cada interacción
+    if "pregunta_actual" not in st.session_state:
+        st.session_state.pregunta_actual = random.choice(ARQ_MIC_NIVEL1)
 
-            st.markdown("### 📌 Pregunta asignada automáticamente:")
-            st.info(pregunta_eval)
-        else:
-            st.error("No hay preguntas disponibles en el banco.")
-            pregunta_eval = ""
+    pregunta_eval = st.session_state.pregunta_actual["pregunta"]
 
-    respuesta_usuario = st.text_area(
-        "Respuesta del evaluado:",
-        height=150
-    )
+    st.markdown("### 📌 Pregunta asignada automáticamente:")
+    st.info(pregunta_eval)
+
+else:
+    st.error("No hay preguntas disponibles en el banco.")
+    pregunta_eval = ""
+
+respuesta_usuario = st.text_area(
+    "Respuesta del evaluado:",
+    height=150
+)
 
     if st.button("Evaluar desempeño técnico"):
 
@@ -1465,6 +1465,12 @@ if modo == "Evaluación técnica":
 
                 st.markdown("**Retroalimentación técnica:**")
                 st.write(feedback)
+
+                # ---------------------------------
+                # RESET CONTROLADO DE PREGUNTA
+                # ---------------------------------
+                if "pregunta_actual" in st.session_state:
+                    del st.session_state.pregunta_actual
 
             except Exception as e:
                 st.error("No se pudo interpretar el resultado de evaluación.")
