@@ -1371,7 +1371,7 @@ if modo == "Proceso de certificación":
 # --------------------------------------------------
 
 # --------------------------------------------------
-# 🧪 MODO DE EVALUACIÓN
+# 🔧 CONTROL DE MODO PRINCIPAL
 # --------------------------------------------------
 
 if modo == "Evaluación técnica":
@@ -1379,30 +1379,29 @@ if modo == "Evaluación técnica":
     st.markdown("## 🧪 Evaluación Técnica Individual")
     st.caption("Módulo de medición objetiva de conocimiento técnico.")
 
-# ---------------------------------
-# PREGUNTA AUTOMÁTICA (BANCO ESTRUCTURADO)
-# ---------------------------------
-if ARQ_MIC_NIVEL1:
+    # ---------------------------------
+    # PREGUNTA AUTOMÁTICA (BANCO ESTRUCTURADO)
+    # ---------------------------------
+    if ARQ_MIC_NIVEL1:
 
-    # Fijar pregunta en sesión para que no cambie en cada interacción
-    if "pregunta_actual" not in st.session_state:
-        st.session_state.pregunta_actual = random.choice(ARQ_MIC_NIVEL1)
+        if "pregunta_actual" not in st.session_state:
+            st.session_state.pregunta_actual = random.choice(ARQ_MIC_NIVEL1)
 
-    pregunta_eval = st.session_state.pregunta_actual["pregunta"]
+        pregunta_eval = st.session_state.pregunta_actual["pregunta"]
 
-    st.markdown("### 📌 Pregunta asignada automáticamente:")
-    st.info(pregunta_eval)
+        st.markdown("### 📌 Pregunta asignada automáticamente:")
+        st.info(pregunta_eval)
 
-else:
-    st.error("No hay preguntas disponibles en el banco.")
-    pregunta_eval = ""
+    else:
+        st.error("No hay preguntas disponibles en el banco.")
+        pregunta_eval = ""
 
-respuesta_usuario = st.text_area(
-    "Respuesta del evaluado:",
-    height=150
-)
+    respuesta_usuario = st.text_area(
+        "Respuesta del evaluado:",
+        height=150
+    )
 
-if st.button("Evaluar desempeño técnico"):
+    if st.button("Evaluar desempeño técnico"):
 
         if pregunta_eval and respuesta_usuario:
 
@@ -1435,7 +1434,7 @@ if st.button("Evaluar desempeño técnico"):
                 score = data.get("score")
                 feedback = data.get("feedback")
 
-                # 💾 Guardar evaluación técnica en DB
+                # Guardar en DB
                 conn = get_db_connection()
                 cur = conn.cursor()
 
@@ -1456,6 +1455,7 @@ if st.button("Evaluar desempeño técnico"):
                 cur.close()
                 conn.close()
 
+                # Mostrar resultado
                 if score == 2:
                     st.success(f"Score: {score} – Respuesta correcta")
                 elif score == 1:
@@ -1467,7 +1467,7 @@ if st.button("Evaluar desempeño técnico"):
                 st.write(feedback)
 
                 # ---------------------------------
-                # RESET CONTROLADO DE PREGUNTA
+                # RESET CONTROLADO
                 # ---------------------------------
                 if "pregunta_actual" in st.session_state:
                     del st.session_state.pregunta_actual
@@ -1475,42 +1475,47 @@ if st.button("Evaluar desempeño técnico"):
             except Exception as e:
                 st.error("No se pudo interpretar el resultado de evaluación.")
                 st.write("Detalle técnico:", e)
-                
-            st.markdown("---")
-            st.markdown("### 📊 Indicadores de desempeño técnico")
 
-            metricas_eval = get_technical_metrics()
+    # ---------------------------------
+    # MÉTRICAS TÉCNICAS
+    # ---------------------------------
+    st.markdown("---")
+    st.markdown("### 📊 Indicadores de desempeño técnico")
 
-            if metricas_eval and metricas_eval["total"] > 0:
+    metricas_eval = get_technical_metrics()
 
-                total = metricas_eval["total"]
-                promedio = round(metricas_eval["promedio"], 2) if metricas_eval["promedio"] else 0
-                correctas = metricas_eval["correctas"]
-                parciales = metricas_eval["parciales"]
-                incorrectas = metricas_eval["incorrectas"]
+    if metricas_eval and metricas_eval["total"] > 0:
 
-                st.write(f"Total evaluaciones: {total}")
-                st.write(f"Promedio score: {promedio}")
+        total = metricas_eval["total"]
+        promedio = round(metricas_eval["promedio"], 2) if metricas_eval["promedio"] else 0
+        correctas = metricas_eval["correctas"]
+        parciales = metricas_eval["parciales"]
+        incorrectas = metricas_eval["incorrectas"]
 
-                st.write(f"🟢 Correctas: {correctas}")
-                st.write(f"🟡 Parciales: {parciales}")
-                st.write(f"🔴 Incorrectas: {incorrectas}")
+        st.write(f"Total evaluaciones: {total}")
+        st.write(f"Promedio score: {promedio}")
+        st.write(f"🟢 Correctas: {correctas}")
+        st.write(f"🟡 Parciales: {parciales}")
+        st.write(f"🔴 Incorrectas: {incorrectas}")
 
-            else:
-                st.info("Aún no existen evaluaciones registradas.")
-            
-if modo == "Consulta comercial":
+    else:
+        st.info("Aún no existen evaluaciones registradas.")
 
-    st.markdown("### Motor de Asistencia Documental")
+
+# --------------------------------------------------
+# CONSULTA COMERCIAL
+# --------------------------------------------------
+
+elif modo == "Consulta comercial":
+
+    st.markdown("### 📄 Motor de Asistencia Documental")
     st.caption("Respuestas generadas exclusivamente con base en documentación oficial vigente.")
 
     pregunta_usuario = st.text_input("Escribe tu pregunta:")
 
     if st.button("Enviar"):
+
         if pregunta_usuario:
-            respuesta = llamar_a_luis(pregunta_usuario, modo)
-            st.write(respuesta)
-            
             respuesta = llamar_a_luis(pregunta_usuario, modo)
             st.write(respuesta)
 
@@ -1519,7 +1524,7 @@ if modo == "Consulta comercial":
                 pregunta_usuario,
                 respuesta
             )
-
+            
     st.markdown("---")
     st.markdown("### 📜 Registro de interacciones (Auditoría interna)")
 
