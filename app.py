@@ -1205,15 +1205,15 @@ with st.sidebar:
     st.write(f"🔑 Rol: {st.session_state['user']['role']}")
 
     if st.button("Cerrar sesión"):
-    st.session_state["user"] = None
+        st.session_state["user"] = None
 
-    if "pregunta_actual" in st.session_state:
-        del st.session_state.pregunta_actual
+        if "pregunta_actual" in st.session_state:
+            del st.session_state.pregunta_actual
 
-    if "modo_anterior" in st.session_state:
-        del st.session_state.modo_anterior
+        if "modo_anterior" in st.session_state:
+            del st.session_state.modo_anterior
 
-    st.rerun()
+        st.rerun()
 
 # --------------------------------------------------
 # CERTIFICACIÓN
