@@ -23,7 +23,13 @@
     "estado": "activo",
     "tags": ["eventos", "mensajeria"],
     "pregunta": "Explique qué es la comunicación basada en eventos en microservicios.",
-    "competencia": "Comprensión básica de arquitectura orientada a eventos"
+    "competencia": "Comprensión básica de arquitectura orientada a eventos",
+    "conceptos_clave": [
+    "eventos",
+    "asincrónica",
+    "desacoplamiento",
+    "broker"
+  ]
   },
   {
     "id": "ARQ-MIC-OPEN-013",
@@ -36,7 +42,13 @@
     "estado": "activo",
     "tags": ["contenedores", "infraestructura"],
     "pregunta": "¿Por qué los contenedores son comúnmente utilizados en microservicios?",
-    "competencia": "Comprensión básica de despliegue moderno"
+    "competencia": "Comprensión básica de despliegue moderno",
+    "conceptos_clave": [
+    "aislamiento",
+    "portabilidad",
+    "escalabilidad",
+    "dependencias"
+  ]
   },
   {
     "id": "ARQ-MIC-OPEN-014",
