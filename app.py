@@ -1191,13 +1191,29 @@ with st.sidebar:
         ["Consulta comercial", "Evaluación técnica", "Proceso de certificación"]
     )
 
+    # Reset de pregunta si cambia el modo
+    if "modo_anterior" not in st.session_state:
+        st.session_state.modo_anterior = modo
+
+    if st.session_state.modo_anterior != modo:
+        if "pregunta_actual" in st.session_state:
+            del st.session_state.pregunta_actual
+        st.session_state.modo_anterior = modo
+
     st.markdown("---")
     st.write(f"👤 Usuario ID: {st.session_state['user']['id']}")
     st.write(f"🔑 Rol: {st.session_state['user']['role']}")
 
     if st.button("Cerrar sesión"):
-        st.session_state["user"] = None
-        st.rerun()
+    st.session_state["user"] = None
+
+    if "pregunta_actual" in st.session_state:
+        del st.session_state.pregunta_actual
+
+    if "modo_anterior" in st.session_state:
+        del st.session_state.modo_anterior
+
+    st.rerun()
 
 # --------------------------------------------------
 # CERTIFICACIÓN
