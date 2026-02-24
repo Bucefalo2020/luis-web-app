@@ -1496,8 +1496,6 @@ if modo == "Evaluación técnica":
                 # ---------------------------------
                 # RESET CONTROLADO
                 # ---------------------------------
-                if "pregunta_actual" in st.session_state:
-                    del st.session_state.pregunta_actual
 
             except Exception as e:
                 st.error("No se pudo interpretar el resultado de evaluación.")
