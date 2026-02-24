@@ -34,6 +34,11 @@ ARQ_MIC_NIVEL1 = load_questions_from_json(
     "question_bank/arquitectura/arq_mic_nivel1.json"
 )
 
+# CARGA BANCO OPEN (EVALUACIÓN TÉCNICA)
+ARQ_MIC_NIVEL1_OPEN = load_questions_from_json(
+    "question_bank/arquitectura/arq_mic_nivel1_open.json"
+)
+
 # --------------------------------------------------
 # PORTADA CORPORATIVA
 # --------------------------------------------------
@@ -1173,16 +1178,6 @@ if not st.session_state["user"]:
 
     st.stop()
 
-# ---------------------------------
-# PRUEBA BANCO EXTERNO (TEMPORAL)
-# ---------------------------------
-st.subheader("Prueba banco externo ARQ-MIC Nivel 1")
-
-if ARQ_MIC_NIVEL1:
-    pregunta_demo = ARQ_MIC_NIVEL1[0]
-    st.write("Pregunta desde JSON externo:")
-    st.write(pregunta_demo["pregunta"])
-
 # --------------------------------------------------
 # SIDEBAR
 # --------------------------------------------------
@@ -1379,13 +1374,15 @@ if modo == "Evaluación técnica":
     st.markdown("## 🧪 Evaluación Técnica Individual")
     st.caption("Módulo de medición objetiva de conocimiento técnico.")
 
-    # ---------------------------------
-    # PREGUNTA AUTOMÁTICA (BANCO ESTRUCTURADO)
-    # ---------------------------------
-    if ARQ_MIC_NIVEL1:
+    # ------------------------------------
+    # PREGUNTA AUTOMÁTICA (BANCO OPEN)
+    # ------------------------------------
 
+    if ARQ_MIC_NIVEL1_OPEN:
+
+        # Fijar pregunta en sesión para que no cambie en cada interacción
         if "pregunta_actual" not in st.session_state:
-            st.session_state.pregunta_actual = random.choice(ARQ_MIC_NIVEL1)
+            st.session_state.pregunta_actual = random.choice(ARQ_MIC_NIVEL1_OPEN)
 
         pregunta_eval = st.session_state.pregunta_actual["pregunta"]
 
