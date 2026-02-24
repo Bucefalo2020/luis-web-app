@@ -1503,30 +1503,44 @@ if modo == "Evaluación técnica":
                 st.error("No se pudo interpretar el resultado de evaluación.")
                 st.write("Detalle técnico:", e)
 
-    # ---------------------------------
-    # MÉTRICAS TÉCNICAS
-    # ---------------------------------
-    st.markdown("---")
-    st.markdown("### 📊 Indicadores de desempeño técnico")
+ # -------------------------------
+# 📊 MÉTRICAS TÉCNICAS
+# -------------------------------
 
-    metricas_eval = get_technical_metrics()
+st.markdown("---")
+st.markdown("### 📊 Indicadores de desempeño técnico")
 
-    if metricas_eval and metricas_eval["total"] > 0:
+metricas_eval = get_technical_metrics()
 
-        total = metricas_eval["total"]
-        promedio = round(metricas_eval["promedio"], 2) if metricas_eval["promedio"] else 0
-        correctas = metricas_eval["correctas"]
-        parciales = metricas_eval["parciales"]
-        incorrectas = metricas_eval["incorrectas"]
+if metricas_eval and metricas_eval["total"] > 0:
 
-        st.write(f"Total evaluaciones: {total}")
-        st.write(f"Promedio score: {promedio}")
-        st.write(f"🟢 Correctas: {correctas}")
-        st.write(f"🟡 Parciales: {parciales}")
-        st.write(f"🔴 Incorrectas: {incorrectas}")
+    total = metricas_eval["total"]
+    promedio = round(metricas_eval["promedio"], 2) if metricas_eval["promedio"] else 0
+    correctas = metricas_eval["correctas"]
+    parciales = metricas_eval["parciales"]
+    incorrectas = metricas_eval["incorrectas"]
 
-    else:
-        st.info("Aún no existen evaluaciones registradas.")
+    st.write(f"Total evaluaciones: {total}")
+    st.write(f"Promedio score: {promedio}")
+
+    st.write(f"🟢 Correctas: {correctas}")
+    st.write(f"🟡 Parciales: {parciales}")
+    st.write(f"🔴 Incorrectas: {incorrectas}")
+
+else:
+    st.info("Aún no existen evaluaciones registradas.")
+
+
+# --------------------------------
+# ➡️ BOTÓN NUEVA PREGUNTA
+# --------------------------------
+
+st.markdown("---")
+
+if st.button("➡️ Siguiente pregunta"):
+    if "pregunta_actual" in st.session_state:
+        del st.session_state.pregunta_actual
+    st.rerun()
 
 
 # --------------------------------------------------
