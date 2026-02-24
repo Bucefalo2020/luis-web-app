@@ -1438,17 +1438,24 @@ if modo == "Evaluación técnica":
 
             palabras = len(respuesta_usuario.split())
 
+            respuesta_muy_breve = False
             if palabras < 12:
-                st.warning("La respuesta es demasiado breve. Desarrolle más la explicación técnica.")
-                st.stop()
-            
+                respuesta_muy_breve = True
+
+
+            # --------------------------------
             # 1️⃣ Generar respuesta modelo
+            # --------------------------------
+
             respuesta_modelo = llamar_a_luis(
                 pregunta_eval,
                 "Evaluación técnica"
             )
 
+            # --------------------------------
             # 2️⃣ Evaluar respuesta del usuario
+            # --------------------------------
+
             resultado = evaluar_respuesta_abierta(
                 pregunta_eval,
                 respuesta_usuario,
@@ -1470,6 +1477,23 @@ if modo == "Evaluación técnica":
 
                 score = data.get("score")
                 feedback = data.get("feedback")
+
+                # --------------------------------
+                # AJUSTE POR PROFUNDIDAD
+                # --------------------------------
+
+                if respuesta_muy_breve:
+
+                    if score == 2:
+                        score = 1
+                        feedback += " Además, la respuesta es conceptualmente correcta pero insuficientemente desarrollada."
+
+                    elif score == 1:
+                        score = 0
+                        feedback += " La respuesta es parcial y además demasiado breve, lo que impide demostrar comprensión suficiente."
+
+                    else:
+                        feedback += " La respuesta es incorrecta y además demasiado breve, careciendo de desarrollo técnico."
 
                 # Guardar en DB
                 conn = get_db_connection()
