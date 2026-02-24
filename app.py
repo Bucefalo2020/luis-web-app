@@ -1448,102 +1448,102 @@ if modo == "Evaluación técnica":
 
             if pregunta_eval in st.session_state.preguntas_respondidas:
                 st.error("Esta pregunta ya fue evaluada. Avance a la siguiente pregunta.")
-                st.stop()            
-
-            # --------------------------------
-            # 1️⃣ Generar respuesta modelo
-            # --------------------------------
-
-            respuesta_modelo = llamar_a_luis(
-                pregunta_eval,
-                "Evaluación técnica"
-            )
-
-            # --------------------------------
-            # 2️⃣ Evaluar respuesta del usuario
-            # --------------------------------
-
-            resultado = evaluar_respuesta_abierta(
-                pregunta_eval,
-                respuesta_usuario,
-                respuesta_modelo
-            )
-
-            st.markdown("### 📊 Resultado de evaluación")
-
-            try:
-                import re
-                import json
-
-                json_match = re.search(r"\{.*\}", resultado, re.DOTALL)
-
-                if json_match:
-                    data = json.loads(json_match.group())
-                else:
-                    raise ValueError("No se encontró JSON válido")
-
-                score = data.get("score")
-                feedback = data.get("feedback")
+            else:            
 
                 # --------------------------------
-                # AJUSTE POR PROFUNDIDAD
+                # 1️⃣ Generar respuesta modelo
                 # --------------------------------
 
-                if respuesta_muy_breve:
+                respuesta_modelo = llamar_a_luis(
+                    pregunta_eval,
+                    "Evaluación técnica"
+                )
 
-                    if score == 2:
-                        score = 1
-                        feedback += " Además, la respuesta es conceptualmente correcta pero insuficientemente desarrollada."
+                # --------------------------------
+                # 2️⃣ Evaluar respuesta del usuario
+                # --------------------------------
 
-                    elif score == 1:
-                        score = 0
-                        feedback += " La respuesta es parcial y además demasiado breve, lo que impide demostrar comprensión suficiente."
-
-                    else:
-                        feedback += " La respuesta es incorrecta y además demasiado breve, careciendo de desarrollo técnico."
-
-                # Guardar en DB
-                conn = get_db_connection()
-                cur = conn.cursor()
-
-                cur.execute("""
-                    INSERT INTO technical_evaluations
-                    (user_id, pregunta, respuesta_usuario, respuesta_modelo, score, feedback)
-                    VALUES (%s, %s, %s, %s, %s, %s);
-                """, (
-                    st.session_state["user"]["id"],
+                resultado = evaluar_respuesta_abierta(
                     pregunta_eval,
                     respuesta_usuario,
-                    respuesta_modelo,
-                    score,
-                    feedback
-                ))
+                    respuesta_modelo
+                )
 
-                conn.commit()
-                cur.close()
-                conn.close()
+                st.markdown("### 📊 Resultado de evaluación")
 
-                # Registrar intento
-                st.session_state.preguntas_respondidas.add(pregunta_eval)
+                try:
+                    import re
+                    import json
 
-                # Mostrar resultado
-                if score == 2:
-                    st.success(f"Score: {score} – Respuesta correcta")
-                elif score == 1:
-                    st.warning(f"Score: {score} – Respuesta parcialmente correcta")
-                else:
-                    st.error(f"Score: {score} – Respuesta incorrecta")
+                    json_match = re.search(r"\{.*\}", resultado, re.DOTALL)
 
-                st.markdown("**Retroalimentación técnica:**")
-                st.write(feedback)
+                    if json_match:
+                        data = json.loads(json_match.group())
+                    else:
+                        raise ValueError("No se encontró JSON válido")
+
+                    score = data.get("score")
+                    feedback = data.get("feedback")
+
+                    # --------------------------------
+                    # AJUSTE POR PROFUNDIDAD
+                    # --------------------------------
+
+                    if respuesta_muy_breve:
+
+                        if score == 2:
+                            score = 1
+                            feedback += " Además, la respuesta es conceptualmente correcta pero insuficientemente desarrollada."
+
+                        elif score == 1:
+                            score = 0
+                            feedback += " La respuesta es parcial y además demasiado breve, lo que impide demostrar comprensión suficiente."
+
+                        else:
+                            feedback += " La respuesta es incorrecta y además demasiado breve, careciendo de desarrollo técnico."
+
+                    # Guardar en DB
+                    conn = get_db_connection()
+                    cur = conn.cursor()
+
+                    cur.execute("""
+                        INSERT INTO technical_evaluations
+                        (user_id, pregunta, respuesta_usuario, respuesta_modelo, score, feedback)
+                        VALUES (%s, %s, %s, %s, %s, %s);
+                    """, (
+                        st.session_state["user"]["id"],
+                        pregunta_eval,
+                        respuesta_usuario,
+                        respuesta_modelo,
+                        score,
+                        feedback
+                    ))
+
+                    conn.commit()
+                    cur.close()
+                    conn.close()
+
+                    # Registrar intento
+                    st.session_state.preguntas_respondidas.add(pregunta_eval)
+
+                    # Mostrar resultado
+                    if score == 2:
+                        st.success(f"Score: {score} – Respuesta correcta")
+                    elif score == 1:
+                        st.warning(f"Score: {score} – Respuesta parcialmente correcta")
+                    else:
+                        st.error(f"Score: {score} – Respuesta incorrecta")
+
+                    st.markdown("**Retroalimentación técnica:**")
+                    st.write(feedback)
 
                 # ---------------------------------
                 # RESET CONTROLADO
                 # ---------------------------------
 
-            except Exception as e:
-                st.error("No se pudo interpretar el resultado de evaluación.")
-                st.write("Detalle técnico:", e)
+                except Exception as e:
+                    st.error("No se pudo interpretar el resultado de evaluación.")
+                    st.write("Detalle técnico:", e)
 
  # -------------------------------
 # 📊 MÉTRICAS TÉCNICAS
