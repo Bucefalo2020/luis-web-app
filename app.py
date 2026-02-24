@@ -1442,6 +1442,13 @@ if modo == "Evaluación técnica":
             if palabras < 12:
                 respuesta_muy_breve = True
 
+            # 🔒 Control de intento único por pregunta
+            if "preguntas_respondidas" not in st.session_state:
+                st.session_state.preguntas_respondidas = set()
+
+            if pregunta_eval in st.session_state.preguntas_respondidas:
+                st.error("Esta pregunta ya fue evaluada. Avance a la siguiente pregunta.")
+                st.stop()            
 
             # --------------------------------
             # 1️⃣ Generar respuesta modelo
@@ -1515,6 +1522,9 @@ if modo == "Evaluación técnica":
                 conn.commit()
                 cur.close()
                 conn.close()
+
+                # Registrar intento
+                st.session_state.preguntas_respondidas.add(pregunta_eval)
 
                 # Mostrar resultado
                 if score == 2:
