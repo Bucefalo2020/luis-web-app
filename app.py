@@ -838,7 +838,25 @@ Modo:
 def evaluar_respuesta_abierta(pregunta, respuesta_usuario, respuesta_modelo):
 
     prompt = f"""
-Eres evaluador técnico de certificaciones.
+Eres evaluador técnico experto en arquitectura de software.
+
+Tu tarea es evaluar la respuesta de un candidato comparándola con la respuesta modelo.
+
+Instrucciones de evaluación:
+
+1. Evalúa principalmente la EXACTITUD CONCEPTUAL.
+2. No penalices diferencias de redacción si el significado es correcto.
+3. Reconoce respuestas parcialmente correctas aunque estén incompletas.
+4. Considera correcta (score=2) si:
+   - La idea central es correcta.
+   - No contiene errores técnicos graves.
+5. Considera parcial (score=1) si:
+   - La respuesta es incompleta pero conceptualmente válida.
+   - Contiene omisiones importantes.
+6. Considera incorrecta (score=0) si:
+   - El concepto central es erróneo.
+   - Hay confusión técnica importante.
+   - No responde la pregunta.
 
 Pregunta:
 {pregunta}
@@ -849,17 +867,14 @@ Respuesta modelo:
 Respuesta del usuario:
 {respuesta_usuario}
 
-Califica:
-0 = Incorrecta
-1 = Parcial
-2 = Correcta
-
-Devuelve únicamente JSON válido:
+Devuelve únicamente JSON válido con este formato exacto:
 
 {{
-  "score": 0-2,
-  "feedback": "explicación técnica clara"
+  "score": 0,
+  "feedback": "Retroalimentación técnica breve, clara y específica indicando qué fue correcto y qué faltó."
 }}
+
+No agregues texto fuera del JSON.
 """
 
     response = client.models.generate_content(
@@ -869,7 +884,6 @@ Devuelve únicamente JSON válido:
     )
 
     return response.text.strip()
-
 
 def generar_preguntas_mc():
 
