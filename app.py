@@ -1432,6 +1432,16 @@ if modo == "Evaluación técnica":
 
         if pregunta_eval and respuesta_usuario:
 
+            # --------------------------------
+            # VALIDACIÓN MÍNIMA DE RESPUESTA
+            # --------------------------------
+
+            palabras = len(respuesta_usuario.split())
+
+            if palabras < 12:
+                st.warning("La respuesta es demasiado breve. Desarrolle más la explicación técnica.")
+                st.stop()
+            
             # 1️⃣ Generar respuesta modelo
             respuesta_modelo = llamar_a_luis(
                 pregunta_eval,
