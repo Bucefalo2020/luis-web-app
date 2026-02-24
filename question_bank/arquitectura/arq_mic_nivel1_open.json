@@ -10,7 +10,14 @@
     "estado": "activo",
     "tags": ["api_gateway", "comunicacion"],
     "pregunta": "¿Cuál es el propósito de un API Gateway en una arquitectura de microservicios?",
-    "competencia": "Comprensión básica de patrones de entrada"
+    "competencia": "Comprensión básica de patrones de entrada",
+  "conceptos_clave": [
+    "punto de entrada",
+    "enrutamiento",
+    "autenticación",
+    "autorización",
+    "centralización"
+  ]
   },
   {
     "id": "ARQ-MIC-OPEN-012",
@@ -61,7 +68,14 @@
     "estado": "activo",
     "tags": ["orquestacion", "kubernetes"],
     "pregunta": "¿Qué problema resuelve un orquestador como Kubernetes en un entorno de microservicios?",
-    "competencia": "Comprensión de gestión de contenedores"
+    "competencia": "Comprensión de gestión de contenedores",
+    "conceptos_clave": [
+    "orquestación",
+    "escalado",
+    "despliegue",
+    "auto-recuperación",
+    "contenedores"
+  ]
   },
   {
     "id": "ARQ-MIC-OPEN-015",
@@ -74,7 +88,14 @@
     "estado": "activo",
     "tags": ["versionado", "despliegue"],
     "pregunta": "¿Por qué es importante el versionado de APIs en microservicios?",
-    "competencia": "Comprensión básica de evolución de servicios"
+    "competencia": "Comprensión básica de evolución de servicios",
+    "conceptos_clave": [
+    "compatibilidad",
+    "backward",
+    "evolución",
+    "consumidores",
+    "despliegue"
+  ]
   },
   {
     "id": "ARQ-MIC-OPEN-016",
@@ -87,7 +108,14 @@
     "estado": "activo",
     "tags": ["seguridad", "autenticacion"],
     "pregunta": "Mencione un desafío de seguridad común en microservicios y explíquelo brevemente.",
-    "competencia": "Identificación básica de riesgos de seguridad"
+    "competencia": "Identificación básica de riesgos de seguridad",
+    "conceptos_clave": [
+    "autenticación",
+    "autorización",
+    "comunicación",
+    "exposición",
+    "ataque"
+  ]
   },
   {
     "id": "ARQ-MIC-OPEN-017",
@@ -100,7 +128,14 @@
     "estado": "activo",
     "tags": ["transacciones", "consistencia"],
     "pregunta": "Explique por qué las transacciones distribuidas son más complejas en microservicios.",
-    "competencia": "Comprensión básica de consistencia distribuida"
+    "competencia": "Comprensión básica de consistencia distribuida",
+    "conceptos_clave": [
+    "distribuidos",
+    "red",
+    "consistencia",
+    "coordinación",
+    "latencia"
+  ]
   },
   {
     "id": "ARQ-MIC-OPEN-018",
@@ -113,7 +148,14 @@
     "estado": "activo",
     "tags": ["circuit_breaker", "resiliencia"],
     "pregunta": "¿Qué es el patrón Circuit Breaker y qué problema intenta resolver?",
-    "competencia": "Comprensión básica de patrones de resiliencia"
+    "competencia": "Comprensión básica de patrones de resiliencia",
+    "conceptos_clave": [
+    "resiliencia",
+    "fallos",
+    "cascada",
+    "interrumpir",
+    "protección"
+  ]
   },
   {
     "id": "ARQ-MIC-OPEN-019",
@@ -126,7 +168,14 @@
     "estado": "activo",
     "tags": ["latencia", "red"],
     "pregunta": "¿Por qué la latencia de red es un factor crítico en arquitecturas de microservicios?",
-    "competencia": "Comprensión de impacto de red en sistemas distribuidos"
+    "competencia": "Comprensión de impacto de red en sistemas distribuidos",
+    "conceptos_clave": [
+    "red",
+    "comunicación",
+    "tiempo de respuesta",
+    "rendimiento",
+    "remotas"
+  ]
   },
   {
     "id": "ARQ-MIC-OPEN-020",
@@ -139,6 +188,12 @@
     "estado": "activo",
     "tags": ["observabilidad", "logs_tracing"],
     "pregunta": "Explique la diferencia entre logs, métricas y trazas en observabilidad de microservicios.",
-    "competencia": "Comprensión básica de monitoreo distribuido"
+    "competencia": "Comprensión básica de monitoreo distribuido",
+    "conceptos_clave": [
+    "logs",
+    "métricas",
+    "trazas",
+    "monitoreo",
+    "seguimiento"
   }
 ]
