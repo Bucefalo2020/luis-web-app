@@ -1412,7 +1412,16 @@ if modo == "Evaluación técnica":
 
         # Fijar pregunta en sesión para que no cambie en cada interacción
         if "pregunta_actual" not in st.session_state:
-            st.session_state.pregunta_actual = random.choice(ARQ_MIC_NIVEL1_OPEN)
+
+            preguntas_con_control = [
+                p for p in ARQ_MIC_NIVEL1_OPEN
+                if "conceptos_clave" in p
+            ]
+
+            if preguntas_con_control:
+                st.session_state.pregunta_actual = random.choice(preguntas_con_control)
+            else:
+                st.session_state.pregunta_actual = random.choice(ARQ_MIC_NIVEL1_OPEN)
 
         pregunta_eval = st.session_state.pregunta_actual["pregunta"]
 
