@@ -1581,11 +1581,12 @@ else:
 st.markdown("---")
 
 if st.button("➡️ Siguiente pregunta"):
+
     if "pregunta_actual" in st.session_state:
         del st.session_state.pregunta_actual
 
     if "respuesta_usuario" in st.session_state:
-        st.session_state.respuesta_usuario = ""
+        del st.session_state.respuesta_usuario
 
     st.rerun()
 
