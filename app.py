@@ -21,8 +21,6 @@ import hashlib
 from core.loader import load_questions_from_json
 import random
 init_db()
-import os
-print("DATABASE_URL:", os.environ.get("DATABASE_URL"))
 
 # CONFIGURACIÓN GLOBAL DE LA APP
 st.set_page_config(
