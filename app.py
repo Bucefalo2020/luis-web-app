@@ -27,18 +27,6 @@ st.set_page_config(
     page_icon="🏢"
 )
 
-# -------------------------------
-# CARGA BANCO EXTERNO (FASE 1)
-# -------------------------------
-ARQ_MIC_NIVEL1 = load_questions_from_json(
-    "question_bank/arquitectura/arq_mic_nivel1.json"
-)
-
-# CARGA BANCO OPEN (EVALUACIÓN TÉCNICA)
-ARQ_MIC_NIVEL1_OPEN = load_questions_from_json(
-    "question_bank/arquitectura/arq_mic_nivel1_open.json"
-)
-
 # --------------------------------------------------
 # PORTADA CORPORATIVA
 # --------------------------------------------------
