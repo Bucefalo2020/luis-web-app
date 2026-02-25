@@ -147,3 +147,23 @@ def seed_nivel_1_questions():
             tipo="open",
             contenido=p["contenido"]
         )
+
+def get_random_active_question(nivel):
+    conn = get_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    cur.execute("""
+        SELECT *
+        FROM preguntas
+        WHERE nivel = %s
+          AND estado = 'activo'
+        ORDER BY RANDOM()
+        LIMIT 1;
+    """, (nivel,))
+
+    result = cur.fetchone()
+
+    cur.close()
+    conn.close()
+
+    return result

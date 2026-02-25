@@ -1,4 +1,4 @@
-from database import init_db
+from database import init_db, get_random_active_question
 import streamlit as st
 import os
 import random
@@ -18,8 +18,6 @@ from reportlab.lib.pagesizes import letter
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import hashlib
-from core.loader import load_questions_from_json
-import random
 init_db()
 
 # CONFIGURACIÓN GLOBAL DE LA APP
@@ -1410,20 +1408,26 @@ if modo == "Evaluación técnica":
     # PREGUNTA AUTOMÁTICA (BANCO OPEN)
     # ------------------------------------
 
-    if ARQ_MIC_NIVEL1_OPEN:
+    # Fijar pregunta en sesión para que no cambie en cada interacción
+    if "pregunta_actual" not in st.session_state:
+        pregunta_db = get_random_active_question("nivel_1")
 
-        # Fijar pregunta en sesión para que no cambie en cada interacción
-        if "pregunta_actual" not in st.session_state:
-            st.session_state.pregunta_actual = random.choice(ARQ_MIC_NIVEL1_OPEN)
-            st.session_state.respuesta_usuario = ""   # 🔹 RESET AQUÍ
+        if pregunta_db:
+            st.session_state.pregunta_actual = pregunta_db
+            st.session_state.respuesta_usuario = ""
+        else:
+            st.session_state.pregunta_actual = None
 
-        pregunta_eval = st.session_state.pregunta_actual["pregunta"]
+    if st.session_state.get("pregunta_actual"):
 
-        st.markdown("### 📌 Pregunta asignada automáticamente:")
+        contenido = st.session_state.pregunta_actual["contenido"]
+        pregunta_eval = contenido["pregunta"]
+
+        st.markdown("### 📝 Pregunta asignada automáticamente:")
         st.info(pregunta_eval)
 
     else:
-        st.error("No hay preguntas disponibles en el banco.")
+        st.error("No hay preguntas activas disponibles en la base de datos.")
         pregunta_eval = ""
 
     respuesta_usuario = st.text_area(
