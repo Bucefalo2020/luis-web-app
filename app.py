@@ -1,3 +1,4 @@
+from database import init_db
 import streamlit as st
 import os
 import random
@@ -19,6 +20,7 @@ from psycopg2.extras import RealDictCursor
 import hashlib
 from core.loader import load_questions_from_json
 import random
+init_db()
 
 # CONFIGURACIÓN GLOBAL DE LA APP
 st.set_page_config(
