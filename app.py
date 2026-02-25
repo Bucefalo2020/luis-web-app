@@ -1434,9 +1434,14 @@ if modo == "Evaluación técnica":
 
             palabras = len(respuesta_usuario.split())
 
-            respuesta_muy_breve = False
-            if palabras < 12:
-                respuesta_muy_breve = True
+            contenido = st.session_state.pregunta_actual["contenido"]
+            min_palabras = contenido.get("min_palabras", 100)
+
+            palabras = len(respuesta_usuario.split())
+
+            if palabras < min_palabras:
+                st.warning(f"La respuesta debe contener al menos {min_palabras} palabras.")
+                st.stop()
 
             # 🔒 Control de intento único por pregunta
             if "preguntas_respondidas" not in st.session_state:
