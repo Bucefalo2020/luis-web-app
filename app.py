@@ -88,7 +88,7 @@ y certificación para fuerza comercial.
 - Certificación con reporte ejecutivo PDF
 """
     )
-F
+
 st.markdown("<br>", unsafe_allow_html=True)
 st.markdown("---")
 
