@@ -1,4 +1,4 @@
-from database import init_db, seed_nivel_1_questions
+from database import init_db
 import streamlit as st
 import os
 import random
@@ -21,7 +21,6 @@ import hashlib
 from core.loader import load_questions_from_json
 import random
 init_db()
-seed_nivel_1_questions()   # ← TEMPORAL
 
 # CONFIGURACIÓN GLOBAL DE LA APP
 st.set_page_config(
