@@ -1412,7 +1412,8 @@ if modo == "Evaluación técnica":
 
         # Fijar pregunta en sesión para que no cambie en cada interacción
         if "pregunta_actual" not in st.session_state:
-           st.session_state.pregunta_actual = random.choice(ARQ_MIC_NIVEL1_OPEN) 
+            st.session_state.pregunta_actual = random.choice(ARQ_MIC_NIVEL1_OPEN)
+            st.session_state.respuesta_usuario = ""   # 🔹 RESET AQUÍ
 
         pregunta_eval = st.session_state.pregunta_actual["pregunta"]
 
@@ -1584,9 +1585,6 @@ if st.button("➡️ Siguiente pregunta"):
 
     if "pregunta_actual" in st.session_state:
         del st.session_state.pregunta_actual
-
-    if "respuesta_usuario" in st.session_state:
-        del st.session_state.respuesta_usuario
 
     st.rerun()
 
