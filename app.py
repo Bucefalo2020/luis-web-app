@@ -1425,7 +1425,8 @@ if modo == "Evaluación técnica":
 
     respuesta_usuario = st.text_area(
         "Respuesta del evaluado:",
-        height=150
+        height=150,
+        key="respuesta_usuario"
     )
 
     if st.button("Evaluar desempeño técnico"):
@@ -1582,8 +1583,11 @@ st.markdown("---")
 if st.button("➡️ Siguiente pregunta"):
     if "pregunta_actual" in st.session_state:
         del st.session_state.pregunta_actual
-    st.rerun()
 
+    if "respuesta_usuario" in st.session_state:
+        st.session_state.respuesta_usuario = ""
+
+    st.rerun()
 
 # --------------------------------------------------
 # CONSULTA COMERCIAL
