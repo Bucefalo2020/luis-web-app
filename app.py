@@ -895,40 +895,41 @@ Instrucciones obligatorias:
 
 def generar_preguntas_mc():
 
-Eres un generador profesional de reactivos de certificación.
+    prompt = f"""
+    Eres un generador profesional de reactivos de certificación.
 
-Tarea:
-Genera EXACTAMENTE 25 preguntas tipo opción múltiple
-basadas exclusivamente en el contenido del documento.
+    Tarea:
+    Genera EXACTAMENTE 25 preguntas tipo opción múltiple
+    basadas exclusivamente en el contenido del documento.
 
-Condiciones obligatorias:
-- 4 opciones por pregunta
-- Solo 1 opción correcta
-- Nivel técnico intermedio-avanzado
-- No inventar información
-- No repetir preguntas
-- No agregar texto fuera del JSON
-- No explicar nada
-- No incluir markdown
-- No incluir bloques de código
+    Condiciones obligatorias:
+    - 4 opciones por pregunta
+    - Solo 1 opción correcta
+    - Nivel técnico intermedio-avanzado
+    - No inventar información
+    - No repetir preguntas
+    - No agregar texto fuera del JSON
+    - No explicar nada
+    - No incluir markdown
+    - No incluir bloques de código
 
-Devuelve ÚNICAMENTE un arreglo JSON válido.
+    Devuelve ÚNICAMENTE un arreglo JSON válido.
 
-Estructura exacta:
+    Estructura exacta:
 
-[
-  {{
-    "id": 1,
-    "type": "mc",
-    "question": "Texto de la pregunta",
-    "options": ["Opción A","Opción B","Opción C","Opción D"],
-    "answer": 0
-  }}
-]
+    [
+      {{
+        "id": 1,
+        "type": "mc",
+        "question": "Texto de la pregunta",
+        "options": ["Opción A","Opción B","Opción C","Opción D"],
+        "answer": 0
+      }}
+    ]
 
-Documento base:
-{contexto}
-"""
+    Documento base:
+    {contexto}
+    """
 
     response = client.models.generate_content(
         model="gemini-2.0-flash",
