@@ -24,7 +24,7 @@ init_db()
 st.set_page_config(
     page_title="Plataforma de Asistencia Inteligente",
     layout="wide",
-    page_icon="🏢"
+    page_icon="🤖"
 )
 
 # --------------------------------------------------
@@ -1257,6 +1257,10 @@ if modo == "Proceso de certificación":
 
     if st.session_state.exam:
 
+    col_main, col_side = st.columns([2.5, 1.2])
+
+    with col_main:
+
         for q in st.session_state.exam:
 
             st.subheader(q["question"])
@@ -1330,6 +1334,8 @@ if modo == "Proceso de certificación":
                     else:
                         resultados.append((q, respuesta_usuario, "Sin respuesta", False))
 
+            st.session_state["resultados"] = resultados
+
             porcentaje = (score / max_score) * 100
 
             if porcentaje < 40:
@@ -1380,22 +1386,42 @@ if modo == "Proceso de certificación":
                 mime="application/pdf"
 )
 
-            st.subheader("Resultados detallados")
+st.markdown("## Informe Ejecutivo de Desempeño Técnico")
 
-            for q, sel, cor, ok in resultados:
-                icono = "Correcto" if ok else "Incorrecto"
-                st.write(f"{icono} — {q['question']}")
-                st.write(f"Tu respuesta: {sel}")
-                st.write(f"Resultado: {cor}")
-                st.divider()
+scores = [1 if r[3] else 0 for r in resultados]
+indice_global = sum(scores) / len(scores) if scores else 0
 
-            if st.button("Reiniciar certificación"):
-                st.session_state.exam = None
-                st.session_state.answers = {}
-                st.session_state.submitted = False
-                st.rerun()
+with st.container(border=True):
+    st.markdown(
+        f"<h1>{indice_global*100:.0f}%</h1>",
+        unsafe_allow_html=True
+    )
+    st.caption("Índice Técnico Consolidado")
 
-    st.stop()
+col1, col2, col3 = st.columns(3)
+
+col1.metric("Respuestas Correctas", scores.count(1))
+col2.metric("Respuestas Incorrectas", scores.count(0))
+col3.metric("Nivel", nivel)
+
+st.divider()
+
+# Mostrar brechas en preguntas abiertas
+st.markdown("### Observaciones Técnicas")
+
+for q, sel, cor, ok in resultados:
+    if isinstance(cor, str) and cor not in ["Sin respuesta"]:
+        st.write(f"**{q['question']}**")
+        st.write(cor)
+        st.divider()
+
+if st.button("Reiniciar certificación"):
+    st.session_state.exam = None
+    st.session_state.answers = {}
+    st.session_state.submitted = False
+    st.rerun()
+
+st.stop()
 
 # --------------------------------------------------
 # CHAT
