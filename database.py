@@ -167,3 +167,17 @@ def get_random_active_question(nivel):
     conn.close()
 
     return result
+
+def update_min_palabras_nivel(nivel, nuevo_min):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE preguntas
+        SET contenido = jsonb_set(contenido, '{min_palabras}', %s::jsonb)
+        WHERE nivel = %s;
+    """, (str(nuevo_min), nivel))
+
+    conn.commit()
+    cur.close()
+    conn.close()
