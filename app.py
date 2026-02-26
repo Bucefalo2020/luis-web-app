@@ -884,14 +884,14 @@ Instrucciones obligatorias:
 5. No repitas los conceptos dentro del campo "feedback".
 6. El campo "feedback" debe explicar la evaluación pero sin listar conceptos.
 7. No agregues texto fuera del JSON.
-   """
-      response = client.models.generate_content(
+    """
+    response = client.models.generate_content(
         model="gemini-2.0-flash",
         contents=prompt,
         config={"temperature": 0.0}
-      )
+    )
 
-      return response.text.strip()
+    return response.text.strip()
 
 def generar_preguntas_mc():
 
