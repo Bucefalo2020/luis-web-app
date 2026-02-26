@@ -866,27 +866,35 @@ Respuesta del usuario:
 
 Devuelve únicamente JSON válido con este formato exacto:
 
-{{
+{
   "score": 0,
-  "feedback": "Retroalimentación técnica breve, clara y específica indicando qué fue correcto y qué faltó respecto a los conceptos clave."
-}}
+  "conceptos_cubiertos": [],
+  "conceptos_faltantes": [],
+  "feedback": ""
+}
 
-No agregues texto fuera del JSON.
-"""
+Instrucciones obligatorias:
 
-    response = client.models.generate_content(
+Instrucciones obligatorias:
+
+1. Debes analizar cada concepto clave individualmente.
+2. Debes completar explícitamente el arreglo "conceptos_cubiertos".
+3. Debes completar explícitamente el arreglo "conceptos_faltantes".
+4. Todo concepto clave debe aparecer exactamente en uno de los dos arreglos.
+5. No repitas los conceptos dentro del campo "feedback".
+6. El campo "feedback" debe explicar la evaluación pero sin listar conceptos.
+7. No agregues texto fuera del JSON.
+   """
+      response = client.models.generate_content(
         model="gemini-2.0-flash",
         contents=prompt,
         config={"temperature": 0.0}
-    )
+      )
 
-    return response.text.strip()
+      return response.text.strip()
 
 def generar_preguntas_mc():
 
-    contexto = DOCUMENTO_BASE[:15000]
-
-    prompt = f"""
 Eres un generador profesional de reactivos de certificación.
 
 Tarea:
@@ -1494,6 +1502,9 @@ if modo == "Evaluación técnica":
                     score = data.get("score")
                     feedback = data.get("feedback")
 
+                    conceptos_cubiertos = data.get("conceptos_cubiertos", [])
+                    conceptos_faltantes = data.get("conceptos_faltantes", [])
+
                     # Guardar en DB
                     conn = get_db_connection()
                     cur = conn.cursor()
@@ -1528,6 +1539,16 @@ if modo == "Evaluación técnica":
 
                     st.markdown("**Retroalimentación técnica:**")
                     st.write(feedback)
+
+                    if conceptos_cubiertos:
+                        st.markdown("### ✅ Conceptos correctamente abordados")
+                        for c in conceptos_cubiertos:
+                            st.markdown(f"- {c}")
+
+                    if conceptos_faltantes:
+                        st.markdown("### ⚠️ Conceptos no abordados o incompletos")
+                        for c in conceptos_faltantes:
+                            st.markdown(f"- {c}")
 
                 # ---------------------------------
                 # RESET CONTROLADO
