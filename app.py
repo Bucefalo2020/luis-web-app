@@ -825,7 +825,7 @@ Modo:
 
 def evaluar_respuesta_abierta(pregunta, respuesta_usuario, respuesta_modelo, conceptos_clave):
 
-prompt = f"""
+    prompt = f"""
 Eres evaluador técnico experto en arquitectura de software.
 
 Tu tarea es evaluar la respuesta de un candidato comparándola con la respuesta modelo
@@ -1473,10 +1473,13 @@ if modo == "Evaluación técnica":
                 # 2️⃣ Evaluar respuesta del usuario
                 # --------------------------------
 
+                conceptos_clave = contenido.get("conceptos_clave", [])
+
                 resultado = evaluar_respuesta_abierta(
                     pregunta_eval,
                     respuesta_usuario,
-                    respuesta_modelo
+                    respuesta_modelo,
+                    conceptos_clave
                 )
 
                 st.markdown("### 📊 Resultado de evaluación")
