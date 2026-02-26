@@ -1259,6 +1259,9 @@ if modo == "Proceso de certificación":
 
     col_main, col_side = st.columns([2.5, 1.2])
 
+    # ===============================
+    # COLUMNA PRINCIPAL (PREGUNTAS)
+    # ===============================
     with col_main:
 
         for q in st.session_state.exam:
@@ -1283,146 +1286,135 @@ if modo == "Proceso de certificación":
         if st.button("Finalizar evaluación"):
             st.session_state.submitted = True
 
-        if st.session_state.submitted:
+    # ===============================
+    # COLUMNA LATERAL (PANEL)
+    # ===============================
+    with col_side:
 
-            score = 0
-            max_score = 0
-            resultados = []
+        st.markdown("### Panel de Desempeño")
 
-            for q in st.session_state.exam:
+        if st.session_state.get("submitted") and "resultados" in st.session_state:
 
-                respuesta_usuario = st.session_state.answers.get(q["id"])
+            scores_panel = [1 if r[3] else 0 for r in st.session_state["resultados"]]
 
-                if q["type"] == "mc":
-
-                    max_score += 1
-                    correcta = q["options"][q["answer"]]
-                    acierto = respuesta_usuario == correcta
-
-                    if acierto:
-                        score += 1
-
-                    resultados.append((q, respuesta_usuario, correcta, acierto))
-
-                elif q["type"] == "open":
-
-                    max_score += 2
-
-                    if respuesta_usuario:
-
-                        evaluacion = evaluar_respuesta_abierta(
-                            q["question"],
-                            respuesta_usuario,
-                            q["model_answer"]
-                        )
-
-                        json_match = re.search(r'\{.*\}', evaluacion, re.DOTALL)
-
-                        if json_match:
-                            evaluacion_json = json.loads(json_match.group())
-                            puntos = int(evaluacion_json.get("score", 0))
-                            feedback = evaluacion_json.get("feedback", "Sin retroalimentación.")
-                        else:
-                            puntos = 0
-                            feedback = evaluacion
-
-                        score += puntos
-                        acierto = puntos > 0
-
-                        resultados.append((q, respuesta_usuario, feedback, acierto))
-
-                    else:
-                        resultados.append((q, respuesta_usuario, "Sin respuesta", False))
-
-            st.session_state["resultados"] = resultados
-
-            porcentaje = (score / max_score) * 100
-
-            if porcentaje < 40:
-                nivel = "INSUFICIENTE"
-            elif porcentaje < 60:
-                nivel = "BÁSICO"
-            elif porcentaje < 80:
-                nivel = "COMPETENTE"
+            if scores_panel:
+                indice_panel = sum(scores_panel) / len(scores_panel)
             else:
-                nivel = "EXPERTO"
+                indice_panel = 0
 
-            import datetime
+            st.metric("Índice Técnico", f"{indice_panel*100:.0f}%")
+            st.progress(indice_panel)
 
-            st.session_state.historial.append({
-                "fecha": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "nombre": nombre,
-                "score": score,
-                "max_score": max_score,
-                "porcentaje": porcentaje,
-                "nivel": nivel
-            })
+        else:
+            st.info("El panel se activará al finalizar la evaluación.")
 
-            st.success(f"Puntuación final: {score}/{max_score} ({porcentaje:.1f}%)")
 
-            st.markdown(f"### Nivel de desempeño: **{nivel}**")
+# ==========================================
+# BLOQUE DE RESULTADOS FINALES
+# ==========================================
+if st.session_state.submitted:
 
-            if nivel == "INSUFICIENTE":
-                st.error("No alcanza el nivel mínimo de competencia. Se recomienda reforzar conocimientos y repetir la evaluación.")
-            elif nivel == "BÁSICO":
-                st.warning("Nivel básico alcanzado. Se recomienda profundizar en las condiciones generales.")
-            elif nivel == "COMPETENTE":
-                st.info("Buen nivel de dominio técnico. Puede seguir avanzando en contenidos especializados.")
+    score = 0
+    max_score = 0
+    resultados = []
+
+    for q in st.session_state.exam:
+
+        respuesta_usuario = st.session_state.answers.get(q["id"])
+
+        if q["type"] == "mc":
+
+            max_score += 1
+            correcta = q["options"][q["answer"]]
+            acierto = respuesta_usuario == correcta
+
+            if acierto:
+                score += 1
+
+            resultados.append((q, respuesta_usuario, correcta, acierto))
+
+        elif q["type"] == "open":
+
+            max_score += 2
+
+            if respuesta_usuario:
+
+                evaluacion = evaluar_respuesta_abierta(
+                    q["question"],
+                    respuesta_usuario,
+                    q["model_answer"]
+                )
+
+                json_match = re.search(r"\{.*\}", evaluacion, re.DOTALL)
+
+                if json_match:
+                    evaluacion_json = json.loads(json_match.group())
+                    puntos = int(evaluacion_json.get("score", 0))
+                    feedback = evaluacion_json.get("feedback", "Sin retroalimentación.")
+                else:
+                    puntos = 0
+                    feedback = evaluacion
+
+                score += puntos
+                acierto = puntos > 0
+
+                resultados.append((q, respuesta_usuario, feedback, acierto))
+
             else:
-                st.success("Nivel experto alcanzado. Dominio sólido del producto y condiciones contractuales.")
+                resultados.append((q, respuesta_usuario, "Sin respuesta", False))
 
-            pdf_buffer = generar_pdf_profesional(
-                nombre,
-                score,
-                max_score,
-                porcentaje,
-                nivel
-)
+    # Guardar resultados para el panel lateral
+    st.session_state["resultados"] = resultados
 
-            st.download_button(
-                label="Descargar reporte PDF",
-                data=pdf_buffer,
-                file_name=f"Reporte_Certificacion_{nombre}.pdf",
-                mime="application/pdf"
-)
+    porcentaje = (score / max_score) * 100 if max_score > 0 else 0
 
-st.markdown("## Informe Ejecutivo de Desempeño Técnico")
+    if porcentaje < 40:
+        nivel = "INSUFICIENTE"
+    elif porcentaje < 60:
+        nivel = "BÁSICO"
+    elif porcentaje < 80:
+        nivel = "COMPETENTE"
+    else:
+        nivel = "EXPERTO"
 
-scores = [1 if r[3] else 0 for r in resultados]
-indice_global = sum(scores) / len(scores) if scores else 0
+    # ===============================
+    # INFORME EJECUTIVO
+    # ===============================
+    st.markdown("## Informe Ejecutivo de Desempeño Técnico")
 
-with st.container(border=True):
-    st.markdown(
-        f"<h1>{indice_global*100:.0f}%</h1>",
-        unsafe_allow_html=True
-    )
-    st.caption("Índice Técnico Consolidado")
+    scores = [1 if r[3] else 0 for r in resultados]
+    indice_global = sum(scores) / len(scores) if scores else 0
 
-col1, col2, col3 = st.columns(3)
+    with st.container(border=True):
+        st.markdown(
+            f"<h1>{indice_global*100:.0f}%</h1>",
+            unsafe_allow_html=True
+        )
+        st.caption("Índice Técnico Consolidado")
 
-col1.metric("Respuestas Correctas", scores.count(1))
-col2.metric("Respuestas Incorrectas", scores.count(0))
-col3.metric("Nivel", nivel)
+    col1, col2, col3 = st.columns(3)
 
-st.divider()
+    col1.metric("Respuestas Correctas", scores.count(1))
+    col2.metric("Respuestas Incorrectas", scores.count(0))
+    col3.metric("Nivel", nivel)
 
-# Mostrar brechas en preguntas abiertas
-st.markdown("### Observaciones Técnicas")
+    st.divider()
 
-for q, sel, cor, ok in resultados:
-    if isinstance(cor, str) and cor not in ["Sin respuesta"]:
-        st.write(f"**{q['question']}**")
-        st.write(cor)
-        st.divider()
+    st.markdown("### Observaciones Técnicas")
 
-if st.button("Reiniciar certificación"):
-    st.session_state.exam = None
-    st.session_state.answers = {}
-    st.session_state.submitted = False
-    st.rerun()
+    for q, sel, cor, ok in resultados:
+        if isinstance(cor, str) and cor not in ["Sin respuesta"]:
+            st.write(f"**{q['question']}**")
+            st.write(cor)
+            st.divider()
 
-st.stop()
+    if st.button("Reiniciar certificación"):
+        st.session_state.exam = None
+        st.session_state.answers = {}
+        st.session_state.submitted = False
+        st.rerun()
 
+    st.stop()
 # --------------------------------------------------
 # CHAT
 # --------------------------------------------------
