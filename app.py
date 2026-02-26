@@ -20,9 +20,6 @@ from psycopg2.extras import RealDictCursor
 import hashlib
 init_db()
 
-from database import update_min_palabras_nivel
-update_min_palabras_nivel("nivel_1", 20)
-
 # CONFIGURACIÓN GLOBAL DE LA APP
 st.set_page_config(
     page_title="Plataforma de Asistencia Inteligente",
