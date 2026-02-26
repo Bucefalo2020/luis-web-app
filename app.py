@@ -823,28 +823,37 @@ Modo:
     return response.text
 
 
-def evaluar_respuesta_abierta(pregunta, respuesta_usuario, respuesta_modelo):
+def evaluar_respuesta_abierta(pregunta, respuesta_usuario, respuesta_modelo, conceptos_clave):
 
-    prompt = f"""
+prompt = f"""
 Eres evaluador técnico experto en arquitectura de software.
 
-Tu tarea es evaluar la respuesta de un candidato comparándola con la respuesta modelo.
+Tu tarea es evaluar la respuesta de un candidato comparándola con la respuesta modelo
+y verificando cobertura de conceptos técnicos clave.
 
 Instrucciones de evaluación:
 
 1. Evalúa principalmente la EXACTITUD CONCEPTUAL.
 2. No penalices diferencias de redacción si el significado es correcto.
-3. Reconoce respuestas parcialmente correctas aunque estén incompletas.
-4. Considera correcta (score=2) si:
-   - La idea central es correcta.
-   - No contiene errores técnicos graves.
-5. Considera parcial (score=1) si:
-   - La respuesta es incompleta pero conceptualmente válida.
-   - Contiene omisiones importantes.
-6. Considera incorrecta (score=0) si:
-   - El concepto central es erróneo.
-   - Hay confusión técnica importante.
-   - No responde la pregunta.
+3. Reconoce respuestas parciales correctas aunque estén incompletas.
+4. Verifica explícitamente si la respuesta cubre los siguientes conceptos clave:
+{conceptos_clave}
+
+Criterios de puntuación:
+
+- Score 2 (Correcta):
+  • La idea central es correcta.
+  • Cubre adecuadamente la mayoría de los conceptos clave.
+  • No contiene errores técnicos graves.
+
+- Score 1 (Parcial):
+  • Respuesta conceptualmente válida pero incompleta.
+  • Cubre algunos conceptos clave pero omite otros relevantes.
+
+- Score 0 (Incorrecta):
+  • Concepto central erróneo.
+  • No cubre conceptos clave esenciales.
+  • Contiene errores técnicos relevantes.
 
 Pregunta:
 {pregunta}
@@ -859,7 +868,7 @@ Devuelve únicamente JSON válido con este formato exacto:
 
 {{
   "score": 0,
-  "feedback": "Retroalimentación técnica breve, clara y específica indicando qué fue correcto y qué faltó."
+  "feedback": "Retroalimentación técnica breve, clara y específica indicando qué fue correcto y qué faltó respecto a los conceptos clave."
 }}
 
 No agregues texto fuera del JSON.
