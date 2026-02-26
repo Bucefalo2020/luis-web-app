@@ -866,12 +866,12 @@ Respuesta del usuario:
 
 Devuelve únicamente JSON válido con este formato exacto:
 
-{
+{{
   "score": 0,
   "conceptos_cubiertos": [],
   "conceptos_faltantes": [],
   "feedback": ""
-}
+}}
 
 Instrucciones obligatorias:
 
