@@ -1446,7 +1446,7 @@ if modo == "Evaluación técnica":
 
             if palabras < min_palabras:
                 st.warning(f"La respuesta debe contener al menos {min_palabras} palabras.")
-                return
+                st.stop()
 
             # 🔒 Control de intento único por pregunta
             if "preguntas_respondidas" not in st.session_state:
