@@ -1188,11 +1188,10 @@ if "historial" not in st.session_state:
 if "user" not in st.session_state:
     st.session_state["user"] = None
 
-if not st.session_state["user"]:
+def show_login():
     st.title("Plataforma de Asistencia Inteligente")
     st.markdown("### Acceso seguro")
     st.caption("Uso exclusivo para personal autorizado.")
-
 
     email = st.text_input("Correo institucional")
     password = st.text_input("Clave de acceso", type="password")
@@ -1207,6 +1206,9 @@ if not st.session_state["user"]:
         else:
             st.error("Acceso no autorizado. Verifique sus credenciales.")
 
+# 🔒 Validación protegida
+if st.session_state.get("user") is None:
+    show_login()
     st.stop()
 
 # --------------------------------------------------
