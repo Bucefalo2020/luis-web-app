@@ -1342,8 +1342,8 @@ if st.session_state.submitted:
                     q["question"],
                     respuesta_usuario,
                     q["model_answer"],
-                    q["conceptos_clave"]
-            )
+                    q.get("conceptos_clave", [])
+                )
 
                 json_match = re.search(r"\{.*\}", evaluacion, re.DOTALL)
 
