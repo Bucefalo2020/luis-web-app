@@ -1257,57 +1257,56 @@ if modo == "Proceso de certificación":
 
     if st.session_state.exam:
 
-    col_main, col_side = st.columns([2.5, 1.2])
+        col_main, col_side = st.columns([2.5, 1.2])
 
     # ===============================
     # COLUMNA PRINCIPAL (PREGUNTAS)
     # ===============================
-    with col_main:
+        with col_main:
 
-        for q in st.session_state.exam:
+            for q in st.session_state.exam:
 
-            st.subheader(q["question"])
+                st.subheader(q["question"])
 
-            if q["type"] == "mc":
-                respuesta = st.radio(
-                    "Seleccione una opción:",
-                    q["options"],
-                    key=f"q_{q['id']}"
-                )
-                st.session_state.answers[q["id"]] = respuesta
+                if q["type"] == "mc":
+                    respuesta = st.radio(
+                        "Seleccione una opción:",
+                        q["options"],
+                        key=f"q_{q['id']}"
+                    )
+                    st.session_state.answers[q["id"]] = respuesta
 
-            elif q["type"] == "open":
-                respuesta = st.text_area(
-                    "Escriba su respuesta:",
-                    key=f"q_{q['id']}"
-                )
-                st.session_state.answers[q["id"]] = respuesta
+                elif q["type"] == "open":
+                    respuesta = st.text_area(
+                        "Escriba su respuesta:",
+                        key=f"q_{q['id']}"
+                    )
+                    st.session_state.answers[q["id"]] = respuesta
 
-        if st.button("Finalizar evaluación"):
-            st.session_state.submitted = True
+            if st.button("Finalizar evaluación"):
+                st.session_state.submitted = True
 
     # ===============================
     # COLUMNA LATERAL (PANEL)
     # ===============================
-    with col_side:
+        with col_side:
 
-        st.markdown("### Panel de Desempeño")
+            st.markdown("### Panel de Desempeño")
 
-        if st.session_state.get("submitted") and "resultados" in st.session_state:
+            if st.session_state.get("submitted") and "resultados" in st.session_state:
 
-            scores_panel = [1 if r[3] else 0 for r in st.session_state["resultados"]]
+                scores_panel = [1 if r[3] else 0 for r in st.session_state["resultados"]]
 
-            if scores_panel:
-                indice_panel = sum(scores_panel) / len(scores_panel)
+                if scores_panel:
+                    indice_panel = sum(scores_panel) / len(scores_panel)
+                else:
+                    indice_panel = 0
+
+                st.metric("Índice Técnico", f"{indice_panel*100:.0f}%")
+                st.progress(indice_panel)
+
             else:
-                indice_panel = 0
-
-            st.metric("Índice Técnico", f"{indice_panel*100:.0f}%")
-            st.progress(indice_panel)
-
-        else:
-            st.info("El panel se activará al finalizar la evaluación.")
-
+                st.info("El panel se activará al finalizar la evaluación.")
 
 # ==========================================
 # BLOQUE DE RESULTADOS FINALES
