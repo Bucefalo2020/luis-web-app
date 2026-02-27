@@ -1484,7 +1484,7 @@ if st.session_state.submitted:
     </div>
     """
 
-    st.markdown(html_indice, unsafe_allow_html=True)
+    st.write(html_indice, unsafe_allow_html=True)
 
     st.progress(indice_global)
 
