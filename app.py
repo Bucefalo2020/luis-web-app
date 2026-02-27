@@ -1389,11 +1389,6 @@ if st.session_state.submitted:
         nivel = "EXPERTO"
 
     # ===============================
-    # INFORME EJECUTIVO
-    # ===============================
-    st.markdown("## Informe Ejecutivo de Desempeño Técnico")
-
-    # ===============================
     # HEADER CORPORATIVO
     # ===============================
 
@@ -1440,30 +1435,51 @@ if st.session_state.submitted:
     scores = [1 if r[3] else 0 for r in resultados]
     indice_global = sum(scores) / len(scores) if scores else 0
 
+    # ===============================
+    # BLOQUE ÍNDICE CONSOLIDADO
+    # ===============================
+
     if indice_global >= 0.8:
         color = "#1E7F3C"
+        label_estado = "Desempeño Sobresaliente"
     elif indice_global >= 0.6:
         color = "#F5A623"
+        label_estado = "Desempeño Aceptable"
     else:
-        color = "#C62828"
+        color = "#E30613"
+        label_estado = "Desempeño Insuficiente"
 
     with st.container(border=True):
 
         st.markdown(
             f"""
-            <div style="text-align:center; padding:25px;">
-                <h1 style="
-                    font-size:64px;
-                    margin-bottom:5px;
+            <div style="
+                text-align:center;
+                padding:30px 20px 15px 20px;
+                background-color:white;
+                border-radius:8px;">
+                
+                <div style="
+                    font-size:72px;
+                    font-weight:700;
                     color:{color};
-                    font-weight:700;">
+                    margin-bottom:5px;">
                     {indice_global*100:.0f}%
-                </h1>
-                <p style="
+                </div>
+
+                <div style="
                     font-size:16px;
-                    color:#374151;">
+                    color:#6B7280;
+                    margin-bottom:8px;">
                     Índice Técnico Consolidado
-                </p>
+                </div>
+
+                <div style="
+                    font-size:14px;
+                    font-weight:600;
+                    color:{color};">
+                    {label_estado}
+                </div>
             </div>
             """,
             unsafe_allow_html=True
@@ -1471,21 +1487,27 @@ if st.session_state.submitted:
 
         st.progress(indice_global)
 
-    col1, col2, col3 = st.columns(3)
+        # AJUSTE 2 NUEVO (métricas mejoradas)
+        st.divider()
+        st.markdown("### Observaciones Técnicas")
 
-    col1.metric("Respuestas Correctas", scores.count(1))
-    col2.metric("Respuestas Incorrectas", scores.count(0))
-    col3.metric("Nivel", nivel)
+        for q, sel, cor, ok in resultados:
+            if isinstance(cor, str) and cor not in ["Sin respuesta"]:
 
-    st.divider()
+                with st.expander(q["question"]):
 
-    st.markdown("### Observaciones Técnicas")
-
-    for q, sel, cor, ok in resultados:
-        if isinstance(cor, str) and cor not in ["Sin respuesta"]:
-            st.write(f"**{q['question']}**")
-            st.write(cor)
-            st.divider()
+                    st.markdown(
+                        f"""
+                        <div style="
+                            background-color:#FFFFFF;
+                            padding:15px;
+                            border-radius:6px;
+                            border:1px solid #E5E7EB;">
+                            {cor}
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
 
     if st.button("Reiniciar certificación"):
         st.session_state.exam = None
