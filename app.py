@@ -1451,43 +1451,41 @@ if st.session_state.submitted:
         color = "#E30613"
         label_estado = "Desempeño Insuficiente"
 
-    with st.container(border=True):
-
-        st.markdown(
-            f"""
-            <div style="
-                text-align:center;
-                padding:30px 20px 15px 20px;
-                background-color:white;
-                border-radius:8px;">
+    st.markdown(
+        f"""
+        <div style="
+            text-align:center;
+            padding:30px 20px 15px 20px;
+            background-color:white;
+            border-radius:8px;">
                 
-                <div style="
-                    font-size:72px;
-                    font-weight:700;
-                    color:{color};
-                    margin-bottom:5px;">
-                    {indice_global*100:.0f}%
-                </div>
-
-                <div style="
-                    font-size:16px;
-                    color:#6B7280;
-                    margin-bottom:8px;">
-                    Índice Técnico Consolidado
-                </div>
-
-                <div style="
-                    font-size:14px;
-                    font-weight:600;
-                    color:{color};">
-                    {label_estado}
-                </div>
+            <div style="
+                font-size:72px;
+                font-weight:700;
+                color:{color};
+                margin-bottom:5px;">
+                {indice_global*100:.0f}%
             </div>
-            """,
-            unsafe_allow_html=True
-        )
 
-        st.progress(indice_global)
+            <div style="
+                font-size:16px;
+                color:#6B7280;
+                margin-bottom:8px;">
+                Índice Técnico Consolidado
+            </div>
+
+            <div style="
+                font-size:14px;
+                font-weight:600;
+                color:{color};">
+                {label_estado}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.progress(indice_global)
 
         # AJUSTE 2 NUEVO (métricas mejoradas)
         st.divider()
