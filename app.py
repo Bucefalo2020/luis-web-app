@@ -27,6 +27,17 @@ st.set_page_config(
     page_icon="🤖"
 )
 
+st.markdown(
+    """
+    <style>
+        .stApp {
+            background-color: #F5F7FA;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # --------------------------------------------------
 # PORTADA CORPORATIVA
 # --------------------------------------------------
@@ -1382,15 +1393,83 @@ if st.session_state.submitted:
     # ===============================
     st.markdown("## Informe Ejecutivo de Desempeño Técnico")
 
+    # ===============================
+    # HEADER CORPORATIVO
+    # ===============================
+
+    st.markdown(
+        """
+        <div style="
+            background-color:#E30613;
+            padding:18px 30px;
+            border-radius:6px 6px 0 0;
+            margin-bottom:0;">
+            <h2 style="
+                color:white;
+                margin:0;
+                font-weight:600;">
+                Evaluación de Certificación Técnica
+            </h2>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    col_logo, col_info = st.columns([1.2, 3])
+
+    with col_logo:
+        st.image("assets/logo_zurich_santander_horizontal.png", use_container_width=True)
+
+    with col_info:
+        st.markdown(
+            """
+            <div style="padding-top:10px;">
+                <h3 style="margin-bottom:5px;">
+                    Informe Ejecutivo de Desempeño
+                </h3>
+                <p style="margin:0; color:#6B7280;">
+                    Plataforma de Evaluación Técnica — Zurich Santander Seguros México
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    st.divider()
+    
     scores = [1 if r[3] else 0 for r in resultados]
     indice_global = sum(scores) / len(scores) if scores else 0
 
+    if indice_global >= 0.8:
+        color = "#1E7F3C"
+    elif indice_global >= 0.6:
+        color = "#F5A623"
+    else:
+        color = "#C62828"
+
     with st.container(border=True):
+
         st.markdown(
-            f"<h1>{indice_global*100:.0f}%</h1>",
+            f"""
+            <div style="text-align:center; padding:25px;">
+                <h1 style="
+                    font-size:64px;
+                    margin-bottom:5px;
+                    color:{color};
+                    font-weight:700;">
+                    {indice_global*100:.0f}%
+                </h1>
+                <p style="
+                    font-size:16px;
+                    color:#374151;">
+                    Índice Técnico Consolidado
+                </p>
+            </div>
+            """,
             unsafe_allow_html=True
         )
-        st.caption("Índice Técnico Consolidado")
+
+        st.progress(indice_global)
 
     col1, col2, col3 = st.columns(3)
 
