@@ -1433,7 +1433,7 @@ if st.session_state.submitted:
         )
 
     st.divider()
-    
+
     scores = [1 if r[3] else 0 for r in resultados]
     indice_global = sum(scores) / len(scores) if scores else 0
 
@@ -1487,27 +1487,30 @@ if st.session_state.submitted:
 
     st.progress(indice_global)
 
-        # AJUSTE 2 NUEVO (métricas mejoradas)
-        st.divider()
-        st.markdown("### Observaciones Técnicas")
+    # ===============================
+    # OBSERVACIONES TÉCNICAS
+    # ===============================
 
-        for q, sel, cor, ok in resultados:
-            if isinstance(cor, str) and cor not in ["Sin respuesta"]:
+    st.divider()
+    st.markdown("### Observaciones Técnicas")
 
-                with st.expander(q["question"]):
+    for q, sel, cor, ok in resultados:
+        if isinstance(cor, str) and cor not in ["Sin respuesta"]:
 
-                    st.markdown(
-                        f"""
-                        <div style="
-                            background-color:#FFFFFF;
-                            padding:15px;
-                            border-radius:6px;
-                            border:1px solid #E5E7EB;">
-                            {cor}
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
+            with st.expander(q["question"]):
+
+                st.markdown(
+                    f"""
+                    <div style="
+                        background-color:#FFFFFF;
+                        padding:15px;
+                        border-radius:6px;
+                        border:1px solid #E5E7EB;">
+                        {cor}
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
 
     if st.button("Reiniciar certificación"):
         st.session_state.exam = None
