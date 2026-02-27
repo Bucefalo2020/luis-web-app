@@ -1418,7 +1418,7 @@ if st.session_state.submitted:
     col_logo, col_info = st.columns([1.2, 3])
 
     with col_logo:
-        st.image("assets/logo_zurich_santander_horizontal.png", use_container_width=True)
+        st.image("assets/logo_zurich_santander_horizontal.png", use_column_width=True)
 
     with col_info:
         st.markdown(
