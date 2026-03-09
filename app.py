@@ -1418,19 +1418,24 @@ if st.session_state.submitted:
         st.image("assets/logo_zurich_santander_horizontal.png", use_column_width=True)
 
     with col_info:
-        st.markdown(
-            """
-            <div style="padding-top:10px;">
-                <h3 style="margin-bottom:5px;">
-                    Informe Ejecutivo de Desempeño
-                </h3>
-                <p style="margin:0; color:#6B7280;">
-                    Plataforma de Evaluación Técnica — Zurich Santander Seguros México
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+    st.markdown(
+        f"""
+        <div style="padding-top:10px;">
+            <h3 style="margin-bottom:5px;">
+                Informe Ejecutivo de Desempeño
+            </h3>
+
+            <p style="margin:0; font-weight:600;">
+                Evaluado: {nombre}
+            </p>
+
+            <p style="margin:0; color:#6B7280;">
+                Plataforma de Evaluación Técnica — Zurich Santander Seguros México
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     st.divider()
 
@@ -1487,6 +1492,23 @@ color:{color};">
     st.markdown(html_indice, unsafe_allow_html=True)
 
     st.progress(indice_global)
+
+    st.divider()
+
+    pdf_buffer = generar_pdf_profesional(
+        nombre,
+        score,
+        max_score,
+        porcentaje,
+        nivel
+    )
+
+    st.download_button(
+        label="📄 Descargar Certificado PDF",
+        data=pdf_buffer,
+        file_name=f"certificacion_{nombre}.pdf",
+        mime="application/pdf"
+    )
 
     # ===============================
     # OBSERVACIONES TÉCNICAS
