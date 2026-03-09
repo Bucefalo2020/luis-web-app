@@ -1418,24 +1418,25 @@ if st.session_state.submitted:
         st.image("assets/logo_zurich_santander_horizontal.png", use_column_width=True)
 
     with col_info:
-    st.markdown(
-        f"""
-        <div style="padding-top:10px;">
-            <h3 style="margin-bottom:5px;">
-                Informe Ejecutivo de Desempeño
-            </h3>
+        
+        st.markdown(
+            f"""
+            <div style="padding-top:10px;">
+                <h3 style="margin-bottom:5px;">
+                    Informe Ejecutivo de Desempeño
+                </h3>
 
-            <p style="margin:0; font-weight:600;">
-                Evaluado: {nombre}
-            </p>
+                <p style="margin:0; font-weight:600;">
+                    Evaluado: {nombre}
+                </p>
 
-            <p style="margin:0; color:#6B7280;">
-                Plataforma de Evaluación Técnica — Zurich Santander Seguros México
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+                <p style="margin:0; color:#6B7280;">
+                    Plataforma de Evaluación Técnica — Zurich Santander Seguros México
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
     st.divider()
 
