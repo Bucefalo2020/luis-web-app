@@ -825,14 +825,13 @@ Modo:
 {instruccion_modo}
 """
 
-    response = client.models.generate_content(
+     response = client.models.generate_content(
         model="gemini-2.0-flash",
         contents=f"{system_prompt}\n\nPregunta: {pregunta}",
         config={"temperature": 0.2}
     )
 
     return response.text
-
 
 def evaluar_respuesta_abierta(pregunta, respuesta_usuario, respuesta_modelo, conceptos_clave):
 
@@ -896,13 +895,26 @@ Instrucciones obligatorias:
 6. El campo "feedback" debe explicar la evaluación pero sin listar conceptos.
 7. No agregues texto fuera del JSON.
     """
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=prompt,
-        config={"temperature": 0.0}
-    )
+    try:
 
-    return response.text.strip()
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt,
+            config={"temperature": 0.0}
+        )
+
+        return response.text.strip()
+
+    except Exception as e:
+
+        return """
+{
+"score": 1,
+"conceptos_cubiertos": [],
+"conceptos_faltantes": [],
+"feedback": "La evaluación automática está temporalmente limitada por el motor de IA. Se asignó una evaluación parcial para continuar el proceso."
+}
+"""
 
 def generar_preguntas_mc():
 
