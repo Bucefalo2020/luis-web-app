@@ -823,9 +823,9 @@ Documento:
 
 Modo:
 {instruccion_modo}
-"""
+    """
 
-     response = client.models.generate_content(
+    response = client.models.generate_content(
         model="gemini-2.0-flash",
         contents=f"{system_prompt}\n\nPregunta: {pregunta}",
         config={"temperature": 0.2}
