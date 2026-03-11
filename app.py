@@ -1391,26 +1391,28 @@ if st.session_state.submitted:
     # Guardar resultados SOLO después de calcularlos
     st.session_state["resultados"] = resultados
 
-# ===============================
-# CÁLCULO ÍNDICE CONSOLIDADO
-# ===============================
+    # ===============================
+    # CÁLCULO ÍNDICE CONSOLIDADO
+    # ===============================
 
-scores = [1 if r[3] else 0 for r in resultados]
-indice_global = sum(scores) / len(scores) if scores else 0
-porcentaje = indice_global * 100
+    resultados = st.session_state.get("resultados", [])
 
-# ===============================
-# NIVEL DE CERTIFICACIÓN
-# ===============================
+    scores = [1 if r[3] else 0 for r in resultados]
+    indice_global = sum(scores) / len(scores) if scores else 0
+    porcentaje = indice_global * 100
 
-if porcentaje < 40:
-    nivel = "INSUFICIENTE"
-elif porcentaje < 60:
-    nivel = "BÁSICO"
-elif porcentaje < 80:
-    nivel = "COMPETENTE"
-else:
-    nivel = "EXPERTO"
+    # ===============================
+    # NIVEL DE CERTIFICACIÓN
+    # ===============================
+
+    if porcentaje < 40:
+        nivel = "INSUFICIENTE"
+    elif porcentaje < 60:
+        nivel = "BÁSICO"
+    elif porcentaje < 80:
+        nivel = "COMPETENTE"
+    else:
+        nivel = "EXPERTO"
 
     # ===============================
     # HEADER CORPORATIVO
