@@ -1446,24 +1446,23 @@ if st.session_state.submitted:
         
         st.markdown(
             f"""
-            <div style="padding-top:10px;">
-                <h3 style="margin-bottom:5px;">
-                    Informe Ejecutivo de Desempeño
-                </h3>
+    <div style="padding-top:10px;">
+    <h3 style="margin-bottom:5px;">
+    Informe Ejecutivo de Desempeño
+    </h3>
 
-                <p style="margin:0; font-weight:600;">
-                    Evaluado: {nombre}
-                </p>
+    **Evaluado:** {nombre}
 
-                <p style="margin:0; color:#6B7280;">
-                    Plataforma de Evaluación Técnica — Zurich Santander Seguros México
-                </p>
-            </div>
-            """,
+    <span style="color:#6B7280;">
+    Plataforma de Evaluación Técnica — Zurich Santander Seguros México
+    </span>
+
+    </div>
+    """,
             unsafe_allow_html=True
         )
 
-    st.divider()
+        st.divider()
 
     # ===============================
     # BLOQUE ÍNDICE CONSOLIDADO
