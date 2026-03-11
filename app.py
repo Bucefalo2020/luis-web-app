@@ -6,6 +6,7 @@ import re
 import datetime
 from pypdf import PdfReader
 from google import genai
+from zoneinfo import ZoneInfo
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib import colors
@@ -1025,7 +1026,7 @@ def generar_pdf_profesional(nombre, score, max_score, porcentaje, nivel):
     # ------------------------------
     # HEADER CORPORATIVO
     # ------------------------------
-    fecha_actual = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+    fecha_actual = datetime.datetime.now(ZoneInfo("America/Mexico_City")).strftime("%d/%m/%Y %H:%M")
 
     logo = Image(
         "assets/logo_zurich_santander_horizontal.png",
