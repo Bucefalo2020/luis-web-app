@@ -1391,7 +1391,7 @@ if st.session_state.submitted:
     # Guardar resultados para el panel lateral
     st.session_state["resultados"] = resultados
 
-    porcentaje = (score / max_score) * 100 if max_score > 0 else 0
+    porcentaje = indice_global * 100
 
     if porcentaje < 40:
         nivel = "INSUFICIENTE"
