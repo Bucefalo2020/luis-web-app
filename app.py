@@ -1077,7 +1077,7 @@ def generar_pdf_profesional(nombre, score, max_score, porcentaje, nivel):
     # ------------------------------
     # DATOS GENERALES
     # ------------------------------
-    fecha_actual = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+    fecha_actual = datetime.datetime.now(ZoneInfo("America/Mexico_City")).strftime("%d/%m/%Y %H:%M")
 
     datos = [
         ["Nombre del evaluado:", nombre],
