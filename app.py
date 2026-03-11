@@ -1390,9 +1390,7 @@ if st.session_state.submitted:
 
     # Guardar resultados para el panel lateral
     st.session_state["resultados"] = resultados
-
-    porcentaje = indice_global * 100
-
+    
     if porcentaje < 40:
         nivel = "INSUFICIENTE"
     elif porcentaje < 60:
@@ -1454,6 +1452,8 @@ if st.session_state.submitted:
 
     scores = [1 if r[3] else 0 for r in resultados]
     indice_global = sum(scores) / len(scores) if scores else 0
+
+    porcentaje = indice_global * 100
 
     # ===============================
     # BLOQUE ÍNDICE CONSOLIDADO
