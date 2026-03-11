@@ -1,4 +1,3 @@
-from database import init_db, get_random_active_question
 import streamlit as st
 import os
 import random
@@ -918,6 +917,8 @@ Instrucciones obligatorias:
 
 def generar_preguntas_mc():
 
+    contexto = DOCUMENTO_BASE[:15000]
+
     prompt = f"""
     Eres un generador profesional de reactivos de certificación.
 
@@ -1008,7 +1009,6 @@ Documento base:
 
 def generar_pdf_profesional(nombre, score, max_score, porcentaje, nivel):
 
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib import colors
     from reportlab.lib.units import inch
@@ -1388,17 +1388,30 @@ if st.session_state.submitted:
             else:
                 resultados.append((q, respuesta_usuario, "Sin respuesta", False))
 
-    # Guardar resultados para el panel lateral
-    st.session_state["resultados"] = resultados
-    
-    if porcentaje < 40:
-        nivel = "INSUFICIENTE"
-    elif porcentaje < 60:
-        nivel = "BÁSICO"
-    elif porcentaje < 80:
-        nivel = "COMPETENTE"
-    else:
-        nivel = "EXPERTO"
+   
+# Guardar resultados para el panel lateral
+st.session_state["resultados"] = resultados
+
+# ===============================
+# CÁLCULO ÍNDICE CONSOLIDADO
+# ===============================
+
+scores = [1 if r[3] else 0 for r in resultados]
+indice_global = sum(scores) / len(scores) if scores else 0
+porcentaje = indice_global * 100
+
+# ===============================
+# NIVEL DE CERTIFICACIÓN
+# ===============================
+
+if porcentaje < 40:
+    nivel = "INSUFICIENTE"
+elif porcentaje < 60:
+    nivel = "BÁSICO"
+elif porcentaje < 80:
+    nivel = "COMPETENTE"
+else:
+    nivel = "EXPERTO"
 
     # ===============================
     # HEADER CORPORATIVO
@@ -1449,11 +1462,6 @@ if st.session_state.submitted:
         )
 
     st.divider()
-
-    scores = [1 if r[3] else 0 for r in resultados]
-    indice_global = sum(scores) / len(scores) if scores else 0
-
-    porcentaje = indice_global * 100
 
     # ===============================
     # BLOQUE ÍNDICE CONSOLIDADO
