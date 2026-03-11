@@ -4,6 +4,7 @@ import random
 import json
 import re
 import datetime
+import uuid
 from pypdf import PdfReader
 from google import genai
 from zoneinfo import ZoneInfo
@@ -1008,7 +1009,7 @@ Documento base:
 
     return response.text.strip()
 
-def generar_pdf_profesional(nombre, score, max_score, porcentaje, nivel):
+def generar_pdf_profesional(nombre, score, max_score, porcentaje, nivel, cert_id):
 
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib import colors
@@ -1084,7 +1085,8 @@ def generar_pdf_profesional(nombre, score, max_score, porcentaje, nivel):
         ["Fecha de evaluación:", fecha_actual],
         ["Resultado obtenido:", f"{score} / {max_score}"],
         ["Porcentaje:", f"{porcentaje:.1f}%"],
-        ["Nivel alcanzado:", nivel]
+        ["Nivel alcanzado:", nivel],
+        ["ID de certificación:", cert_id]
     ]
 
     tabla_datos = Table(datos, colWidths=[2.5 * inch, 4 * inch])
@@ -1417,6 +1419,12 @@ if st.session_state.submitted:
         nivel = "EXPERTO"
 
     # ===============================
+    # ID ÚNICO DE CERTIFICACIÓN
+    # ===============================
+
+    cert_id = f"ZS-{datetime.datetime.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
+    
+    # ===============================
     # HEADER CORPORATIVO
     # ===============================
 
@@ -1523,7 +1531,8 @@ color:{color};">
         score,
         max_score,
         porcentaje,
-        nivel
+        nivel,
+        cert_id
     )
 
     st.download_button(
