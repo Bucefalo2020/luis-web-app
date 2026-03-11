@@ -1388,8 +1388,8 @@ if st.session_state.submitted:
                 resultados.append((q, respuesta_usuario, "Sin respuesta", False))
 
    
-# Guardar resultados SOLO después de calcularlos
-st.session_state["resultados"] = resultados
+    # Guardar resultados SOLO después de calcularlos
+    st.session_state["resultados"] = resultados
 
 # ===============================
 # CÁLCULO ÍNDICE CONSOLIDADO
