@@ -80,7 +80,7 @@ y certificación para fuerza comercial.
 - Evaluación técnica automatizada
 - Certificación con reporte ejecutivo PDF
 """,
-        unsafe_allow_html=True    
+        unsafe_allow_html=True
     )
 
 st.markdown("<br>", unsafe_allow_html=True)
