@@ -17,7 +17,6 @@ from reportlab.lib.pagesizes import letter
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import hashlib
-init_db()
 
 # CONFIGURACIÓN GLOBAL DE LA APP
 st.set_page_config(
