@@ -1373,6 +1373,8 @@ if st.session_state.submitted:
                     q.get("conceptos_clave", [])
                 )
 
+                json_match = re.search(r"\{[\s\S]*?\}", evaluacion)
+
                 if json_match:
                     try:
                         evaluacion_json = json.loads(json_match.group())
