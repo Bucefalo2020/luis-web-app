@@ -884,6 +884,13 @@ Devuelve únicamente JSON válido con este formato exacto:
   "feedback": ""
 }}
 
+{
+ "score": 1,
+ "conceptos_cubiertos": [],
+ "conceptos_faltantes": [],
+ "feedback": "Evaluación parcial generada automáticamente."
+}
+
 IMPORTANTE:
 - Devuelve SOLO el JSON.
 - No incluyas explicaciones fuera del JSON.
@@ -905,7 +912,7 @@ Instrucciones obligatorias:
     try:
 
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-1.5-flash",
             contents=prompt,
             config={"temperature": 0.0}
         )
@@ -914,6 +921,8 @@ Instrucciones obligatorias:
 
         # Limpieza de markdown que a veces agrega el modelo
         resultado = resultado.replace("```json", "").replace("```", "").strip()
+
+        print("DEBUG GEMINI:", resultado)
 
         return resultado
 
