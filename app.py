@@ -1373,12 +1373,14 @@ if st.session_state.submitted:
                     q.get("conceptos_clave", [])
                 )
 
-                json_match = re.search(r"\{.*\}", evaluacion, re.DOTALL)
-
                 if json_match:
-                    evaluacion_json = json.loads(json_match.group())
-                    puntos = int(evaluacion_json.get("score", 0))
-                    feedback = evaluacion_json.get("feedback", "Sin retroalimentación.")
+                    try:
+                        evaluacion_json = json.loads(json_match.group())
+                        puntos = int(evaluacion_json.get("score", 0))
+                        feedback = evaluacion_json.get("feedback", "Sin retroalimentación.")
+                    except:
+                        puntos = 0
+                        feedback = evaluacion
                 else:
                     puntos = 0
                     feedback = evaluacion
@@ -1670,10 +1672,13 @@ if modo == "Evaluación técnica":
                     import re
                     import json
 
-                    json_match = re.search(r"\{.*\}", resultado, re.DOTALL)
+                    json_match = re.search(r"\{[\s\S]*?\}", resultado)
 
                     if json_match:
-                        data = json.loads(json_match.group())
+                        try:
+                            data = json.loads(json_match.group())
+                        except:
+                            raise ValueError("JSON inválido en respuesta del modelo")
                     else:
                         raise ValueError("No se encontró JSON válido")
 
