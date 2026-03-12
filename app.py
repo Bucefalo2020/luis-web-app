@@ -884,7 +884,13 @@ Devuelve únicamente JSON válido con este formato exacto:
   "feedback": ""
 }}
 
-Instrucciones obligatorias:
+IMPORTANTE:
+- Devuelve SOLO el JSON.
+- No incluyas explicaciones fuera del JSON.
+- No uses markdown.
+- No agregues texto antes o después del JSON.
+- No incluyas bloques ```json.
+- La respuesta debe comenzar con {{ y terminar con }}.
 
 Instrucciones obligatorias:
 
@@ -904,11 +910,16 @@ Instrucciones obligatorias:
             config={"temperature": 0.0}
         )
 
-        return response.text.strip()
+        resultado = response.text.strip()
 
-    except Exception as e:
+        # Limpieza de markdown que a veces agrega el modelo
+        resultado = resultado.replace("```json", "").replace("```", "").strip()
 
-        return """
+        return resultado
+
+except Exception as e:
+
+    return """
 {
 "score": 1,
 "conceptos_cubiertos": [],
