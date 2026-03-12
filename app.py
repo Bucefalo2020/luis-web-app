@@ -917,9 +917,9 @@ Instrucciones obligatorias:
 
         return resultado
 
-except Exception as e:
+    except Exception as e:
 
-    return """
+        return """
 {
 "score": 1,
 "conceptos_cubiertos": [],
