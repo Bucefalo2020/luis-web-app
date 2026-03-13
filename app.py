@@ -852,21 +852,21 @@ Modo:
 {instruccion_modo}
     """
 
-        try:
-            response = client.models.generate_content(
-                model="gemini-2.0-flash",
-                contents=f"{system_prompt}\n\nPregunta: {pregunta}",
-                config={"temperature": 0.2}
-            )
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=f"{system_prompt}\n\nPregunta: {pregunta}",
+            config={"temperature": 0.2}
+        )
 
-            return response.text
+        return response.text
 
-        except Exception as e:
+    except Exception as e:
 
-            if "RESOURCE_EXHAUSTED" in str(e):
-                return "⚠️ El motor de IA alcanzó temporalmente el límite de uso. Intenta nuevamente en unos segundos."
+        if "RESOURCE_EXHAUSTED" in str(e):
+            return "⚠️ El motor de IA alcanzó temporalmente el límite de uso. Intenta nuevamente en unos segundos."
 
-            return f"Error en la generación de respuesta: {str(e)}"
+        return f"Error en la generación de respuesta: {str(e)}"
 
 def evaluar_respuesta_abierta(pregunta, respuesta_usuario, respuesta_modelo, conceptos_clave):
 
