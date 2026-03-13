@@ -852,13 +852,21 @@ Modo:
 {instruccion_modo}
     """
 
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=f"{system_prompt}\n\nPregunta: {pregunta}",
-        config={"temperature": 0.2}
-    )
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=f"{system_prompt}\n\nPregunta: {pregunta}",
+                config={"temperature": 0.2}
+            )
 
-    return response.text
+            return response.text
+
+        except Exception as e:
+
+            if "RESOURCE_EXHAUSTED" in str(e):
+                return "⚠️ El motor de IA alcanzó temporalmente el límite de uso. Intenta nuevamente en unos segundos."
+
+            return f"Error en la generación de respuesta: {str(e)}"
 
 def evaluar_respuesta_abierta(pregunta, respuesta_usuario, respuesta_modelo, conceptos_clave):
 
@@ -950,7 +958,7 @@ Instrucciones obligatorias:
         # Limpieza de markdown que a veces agrega el modelo
         resultado = resultado.replace("```json", "").replace("```", "").strip()
 
-        print("DEBUG GEMINI:", resultado)
+        print("DEBUG RESPUESTA GEMINI:", resultado)
 
         return resultado
 
@@ -1421,7 +1429,7 @@ if st.session_state.submitted:
                     q.get("conceptos_clave", [])
                 )
 
-                json_match = re.search(r"\{[\s\S]*?\}", evaluacion)
+                json_match = re.search(r"\{.*\}", evaluacion, re.DOTALL)
 
                 if json_match:
                     try:
