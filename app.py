@@ -963,6 +963,7 @@ Instrucciones obligatorias:
         return resultado
 
     except Exception as e:
+        print("ERROR EVALUACION IA:", str(e))
 
         return """
 {
@@ -1435,7 +1436,7 @@ if st.session_state.submitted:
                     try:
                         evaluacion_json = json.loads(json_match.group())
                         puntos = int(evaluacion_json.get("score", 0))
-                        feedback = evaluacion_json.get("feedback", "Sin retroalimentación.")
+                        feedback = evaluacion_json.get("feedback") or evaluacion
                     except:
                         puntos = 0
                         feedback = evaluacion
