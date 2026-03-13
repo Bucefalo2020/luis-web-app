@@ -110,7 +110,7 @@ def get_random_active_question(nivel):
     cur.execute("""
         SELECT contenido
         FROM preguntas
-        WHERE nivel = %s AND activa = TRUE
+        WHERE nivel = %s
         ORDER BY RANDOM()
         LIMIT 1
     """, (nivel,))
