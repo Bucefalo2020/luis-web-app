@@ -884,12 +884,14 @@ Devuelve únicamente JSON válido con este formato exacto:
   "feedback": ""
 }}
 
-{
+Si no puedes generar JSON válido, devuelve exactamente este JSON:
+
+{{
  "score": 1,
  "conceptos_cubiertos": [],
  "conceptos_faltantes": [],
  "feedback": "Evaluación parcial generada automáticamente."
-}
+}}
 
 IMPORTANTE:
 - Devuelve SOLO el JSON.
