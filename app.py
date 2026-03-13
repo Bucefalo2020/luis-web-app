@@ -1474,6 +1474,8 @@ if st.session_state.submitted:
 
     col_logo, col_info = st.columns([1.2, 3])
 
+    nombre = st.session_state.get("usuario", "Usuario")
+
     with col_logo:
         st.image("assets/logo_zurich_santander_horizontal.png", use_column_width=True)
 
