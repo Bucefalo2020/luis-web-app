@@ -99,6 +99,32 @@ def get_db_connection():
     )
     return conn
 
+# =====================================
+# OBTENER PREGUNTA ACTIVA ALEATORIA
+# =====================================
+def get_random_active_question(nivel):
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT contenido
+        FROM preguntas
+        WHERE nivel = %s AND activa = TRUE
+        ORDER BY RANDOM()
+        LIMIT 1
+    """, (nivel,))
+
+    row = cur.fetchone()
+
+    cur.close()
+    conn.close()
+
+    if row:
+        return row
+
+    return None
+
 def init_db():
     conn = get_db_connection()
     cur = conn.cursor()
