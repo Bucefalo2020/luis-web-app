@@ -5,6 +5,7 @@ import json
 import re
 import datetime
 import uuid
+import requests
 from pypdf import PdfReader
 from google import genai
 from zoneinfo import ZoneInfo
@@ -838,6 +839,32 @@ def get_technical_metrics():
 # --------------------------------------------------
 # FUNCIONES IA
 # --------------------------------------------------
+
+def gemini_generate(prompt, temperature=0.0):
+
+    API_KEY = os.getenv("GEMINI_API_KEY")
+
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={API_KEY}"
+
+    payload = {
+        "contents": [
+            {
+                "parts": [
+                    {"text": prompt}
+                ]
+            }
+        ],
+        "generationConfig": {
+            "temperature": temperature
+        }
+    }
+
+    response = requests.post(url, json=payload)
+    response.raise_for_status()
+
+    data = response.json()
+
+    return data["candidates"][0]["content"]["parts"][0]["text"]
 
 def llamar_a_luis(pregunta, modo):
 
