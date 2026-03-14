@@ -20,6 +20,14 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import hashlib
 
+# =================================
+# CONFIGURACIÓN GLOBAL DEL MODELO IA
+# =================================
+
+MODEL_GEMINI = "gemini-1.5-flash"
+MAX_CONTEXT_GENERACION = 3000
+MAX_CONTEXT_CHAT = 15000
+
 # CONFIGURACIÓN GLOBAL DE LA APP
 st.set_page_config(
     page_title="Plataforma de Asistencia Inteligente",
@@ -854,7 +862,7 @@ Modo:
 
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-1.5-flash",
             contents=f"{system_prompt}\n\nPregunta: {pregunta}",
             config={"temperature": 0.2}
         )
@@ -862,6 +870,7 @@ Modo:
         return response.text
 
     except Exception as e:
+        print("ERROR GEMINI:", str(e))
 
         if "RESOURCE_EXHAUSTED" in str(e):
             return "⚠️ El motor de IA alcanzó temporalmente el límite de uso. Intenta nuevamente en unos segundos."
@@ -948,7 +957,7 @@ Instrucciones obligatorias:
     try:
 
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-1.5-flash",
             contents=prompt,
             config={
                 "temperature": 0.0,
@@ -1001,7 +1010,7 @@ Instrucciones obligatorias:
 
 def generar_preguntas_mc():
 
-    contexto = DOCUMENTO_BASE[:3000]
+    contexto = DOCUMENTO_BASE[:MAX_CONTEXT_GENERACION]
 
     prompt = f"""
     Eres un generador profesional de reactivos de certificación.
@@ -1040,7 +1049,7 @@ def generar_preguntas_mc():
     """
 
     response = client.models.generate_content(
-        model="gemini-2.0-flash",
+        model="gemini-1.5-flash",
         contents=prompt,
         config={"temperature": 0.1}
     )
@@ -1049,7 +1058,7 @@ def generar_preguntas_mc():
 
 def generar_preguntas_open():
 
-    contexto = DOCUMENTO_BASE[:3000]
+    contexto = DOCUMENTO_BASE[:MAX_CONTEXT_GENERACION]
 
     prompt = f"""
 Eres especialista en diseño de certificaciones técnicas.
@@ -1084,7 +1093,7 @@ Documento base:
 """
 
     response = client.models.generate_content(
-        model="gemini-2.0-flash",
+        model="gemini-1.5-flash",
         contents=prompt,
         config={"temperature": 0.1}
     )
