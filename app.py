@@ -905,13 +905,7 @@ Modo:
     """
 
     try:
-        response = client.models.generate_content(
-            model=MODEL_GEMINI,
-            contents=f"{system_prompt}\n\nPregunta: {pregunta}",
-            config={"temperature": 0.2}
-        )
-
-        return response.text
+        return gemini_generate(f"{system_prompt}\n\nPregunta: {pregunta}", temperature=0.2)
 
     except Exception as e:
         print("ERROR GEMINI:", str(e))
@@ -939,19 +933,19 @@ Instrucciones de evaluación:
 
 Criterios de puntuación:
 
-- Score 2 (Correcta):
-  • La idea central es correcta.
-  • Cubre adecuadamente la mayoría de los conceptos clave.
-  • No contiene errores técnicos graves.
+Score 2 (Correcta):
+- La idea central es correcta
+- Cubre adecuadamente la mayoría de los conceptos clave
+- No contiene errores técnicos graves
 
-- Score 1 (Parcial):
-  • Respuesta conceptualmente válida pero incompleta.
-  • Cubre algunos conceptos clave pero omite otros relevantes.
+Score 1 (Parcial):
+- Respuesta conceptualmente válida pero incompleta
+- Cubre algunos conceptos clave pero omite otros
 
-- Score 0 (Incorrecta):
-  • Concepto central erróneo.
-  • No cubre conceptos clave esenciales.
-  • Contiene errores técnicos relevantes.
+Score 0 (Incorrecta):
+- Concepto central erróneo
+- No cubre conceptos clave esenciales
+- Contiene errores técnicos relevantes
 
 Pregunta:
 {pregunta}
@@ -962,66 +956,51 @@ Respuesta modelo:
 Respuesta del usuario:
 {respuesta_usuario}
 
-Devuelve únicamente JSON válido con este formato exacto:
+Devuelve ÚNICAMENTE JSON válido con este formato:
 
 {{
-  "score": 0,
-  "conceptos_cubiertos": [],
-  "conceptos_faltantes": [],
-  "feedback": ""
+"score": 0,
+"conceptos_cubiertos": [],
+"conceptos_faltantes": [],
+"feedback": ""
 }}
 
-Si no puedes generar JSON válido, devuelve exactamente este JSON:
+No agregues texto fuera del JSON.
+"""
 
-{{
- "score": 1,
- "conceptos_cubiertos": [],
- "conceptos_faltantes": [],
- "feedback": "Evaluación parcial generada automáticamente."
-}}
-
-IMPORTANTE:
-- Devuelve SOLO el JSON.
-- No incluyas explicaciones fuera del JSON.
-- No uses markdown.
-- No agregues texto antes o después del JSON.
-- No incluyas bloques ```json.
-- La respuesta debe comenzar con {{ y terminar con }}.
-
-Instrucciones obligatorias:
-
-1. Debes analizar cada concepto clave individualmente.
-2. Debes completar explícitamente el arreglo "conceptos_cubiertos".
-3. Debes completar explícitamente el arreglo "conceptos_faltantes".
-4. Todo concepto clave debe aparecer exactamente en uno de los dos arreglos.
-5. No repitas los conceptos dentro del campo "feedback".
-6. El campo "feedback" debe explicar la evaluación pero sin listar conceptos.
-7. No agregues texto fuera del JSON.
-    """
     try:
 
-        response = client.models.generate_content(
-            model=MODEL_GEMINI,
-            contents=prompt,
-            config={"temperature": 0.0}
-        )
+        resultado = gemini_generate(prompt, temperature=0.0)
 
-        resultado = response.text
+        print("RESPUESTA GEMINI RAW:", resultado)
 
         if not resultado:
-            resultado = response.candidates[0].content.parts[0].text
+            raise ValueError("Respuesta vacía de Gemini")
 
         resultado = resultado.strip()
 
-        # Limpieza de markdown que a veces agrega el modelo
+        # limpiar markdown si el modelo lo agrega
         resultado = resultado.replace("```json", "").replace("```", "").strip()
 
-        print("DEBUG RESPUESTA GEMINI:", resultado)
-    
-        return resultado
+        try:
+            data = json.loads(resultado)
+            return json.dumps(data)
+
+        except Exception as parse_error:
+
+            print("ERROR PARSE JSON:", parse_error)
+
+            return """
+{
+"score": 1,
+"conceptos_cubiertos": [],
+"conceptos_faltantes": [],
+"feedback": "La evaluación automática generó un resultado parcial debido a un formato inesperado en la respuesta del modelo."
+}
+"""
 
     except Exception as e:
-        
+
         print("ERROR EVALUACION IA:", str(e))
 
         return """
