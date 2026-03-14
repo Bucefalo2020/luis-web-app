@@ -848,7 +848,7 @@ def gemini_generate(prompt, temperature=0.0):
 
     API_KEY = os.getenv("GEMINI_API_KEY")
 
-    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={API_KEY}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={API_KEY}"
 
     payload = {
         "contents": [
@@ -874,9 +874,7 @@ def gemini_generate(prompt, temperature=0.0):
         candidate = data["candidates"][0]
 
         if "content" in candidate and "parts" in candidate["content"]:
-            parts = candidate["content"]["parts"]
-
-            for part in parts:
+            for part in candidate["content"]["parts"]:
                 if "text" in part:
                     return part["text"]
 
