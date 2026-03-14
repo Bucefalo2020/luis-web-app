@@ -862,7 +862,7 @@ Modo:
 
     try:
         response = client.models.generate_content(
-            MODEL_GEMINI = "gemini-1.5-flash-latest",
+            model=MODEL_GEMINI,
             contents=f"{system_prompt}\n\nPregunta: {pregunta}",
             config={"temperature": 0.2}
         )
@@ -957,28 +957,9 @@ Instrucciones obligatorias:
     try:
 
         response = client.models.generate_content(
-            MODEL_GEMINI = "gemini-1.5-flash-latest",
+            model=MODEL_GEMINI,
             contents=prompt,
-            config={
-                "temperature": 0.0,
-                "response_mime_type": "application/json",
-                "response_schema": {
-                    "type": "object",
-                    "properties": {
-                        "score": {"type": "integer"},
-                        "conceptos_cubiertos": {
-                            "type": "array",
-                            "items": {"type": "string"}
-                        },
-                        "conceptos_faltantes": {
-                            "type": "array",
-                            "items": {"type": "string"}
-                        },
-                        "feedback": {"type": "string"}
-                    },
-                    "required": ["score", "feedback"]
-                }
-            }
+            config={"temperature": 0.0}
         )
 
         resultado = response.text
@@ -1049,7 +1030,7 @@ def generar_preguntas_mc():
     """
 
     response = client.models.generate_content(
-        MODEL_GEMINI = "gemini-1.5-flash-latest",
+        model=MODEL_GEMINI,
         contents=prompt,
         config={"temperature": 0.1}
     )
@@ -1093,7 +1074,7 @@ Documento base:
 """
 
     response = client.models.generate_content(
-        MODEL_GEMINI = "gemini-1.5-flash-latest",
+        model=MODEL_GEMINI,
         contents=prompt,
         config={"temperature": 0.1}
     )
