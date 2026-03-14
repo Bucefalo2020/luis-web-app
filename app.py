@@ -972,7 +972,12 @@ Instrucciones obligatorias:
             }
         )
 
-        resultado = response.text.strip()
+        resultado = response.text
+
+        if not resultado:
+            resultado = response.candidates[0].content.parts[0].text
+
+        resultado = resultado.strip()
 
         # Limpieza de markdown que a veces agrega el modelo
         resultado = resultado.replace("```json", "").replace("```", "").strip()
