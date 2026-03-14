@@ -978,16 +978,12 @@ Instrucciones obligatorias:
         resultado = resultado.replace("```json", "").replace("```", "").strip()
 
         print("DEBUG RESPUESTA GEMINI:", resultado)
-
-        evaluacion_json = json.loads(resultado)
-
-        puntos = int(evaluacion_json.get("score", 0))
-        feedback = evaluacion_json.get("feedback", "")
     
         return resultado
 
-        except Exception as e:
-            print("ERROR EVALUACION IA:", str(e))
+    except Exception as e:
+        
+        print("ERROR EVALUACION IA:", str(e))
 
         return """
 {
