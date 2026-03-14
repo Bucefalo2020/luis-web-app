@@ -1772,15 +1772,9 @@ if modo == "Evaluación técnica":
                     import re
                     import json
 
-                    json_match = re.search(r"\{[\s\S]*?\}", resultado)
+                    data = json.loads(resultado)
 
-                    if json_match:
-                        try:
-                            data = json.loads(json_match.group())
-                        except:
-                            raise ValueError("JSON inválido en respuesta del modelo")
-                    else:
-                        raise ValueError("No se encontró JSON válido")
+                    print("RESPUESTA GEMINI:", resultado)
 
                     score = data.get("score")
                     feedback = data.get("feedback")
