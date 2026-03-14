@@ -24,7 +24,7 @@ import hashlib
 # CONFIGURACIÓN GLOBAL DEL MODELO IA
 # =================================
 
-MODEL_GEMINI = "gemini-1.5-flash-latest"
+MODEL_GEMINI = "gemini-1.5-flash"
 MAX_CONTEXT_GENERACION = 3000
 MAX_CONTEXT_CHAT = 15000
 
