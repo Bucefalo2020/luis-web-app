@@ -864,7 +864,19 @@ def gemini_generate(prompt, temperature=0.0):
 
     data = response.json()
 
-    return data["candidates"][0]["content"]["parts"][0]["text"]
+    print("RESPUESTA COMPLETA GEMINI:", data)
+
+    if "candidates" in data and len(data["candidates"]) > 0:
+        candidate = data["candidates"][0]
+
+        if "content" in candidate and "parts" in candidate["content"]:
+            parts = candidate["content"]["parts"]
+
+            for part in parts:
+                if "text" in part:
+                    return part["text"]
+
+    return ""
 
 def llamar_a_luis(pregunta, modo):
 
