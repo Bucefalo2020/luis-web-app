@@ -1001,7 +1001,7 @@ Instrucciones obligatorias:
 
 def generar_preguntas_mc():
 
-    contexto = DOCUMENTO_BASE[:15000]
+    contexto = DOCUMENTO_BASE[:3000]
 
     prompt = f"""
     Eres un generador profesional de reactivos de certificación.
@@ -1049,7 +1049,7 @@ def generar_preguntas_mc():
 
 def generar_preguntas_open():
 
-    contexto = DOCUMENTO_BASE[:15000]
+    contexto = DOCUMENTO_BASE[:3000]
 
     prompt = f"""
 Eres especialista en diseño de certificaciones técnicas.
