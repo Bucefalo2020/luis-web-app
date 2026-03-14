@@ -842,6 +842,8 @@ def get_technical_metrics():
 
 def gemini_generate(prompt, temperature=0.0):
 
+    print("FUNCION GEMINI REST EJECUTADA")
+
     API_KEY = os.getenv("GEMINI_API_KEY")
 
     url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={API_KEY}"
