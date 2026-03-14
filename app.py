@@ -21,6 +21,8 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import hashlib
 
+print("VERSION APP DEBUG 14-MAR")
+
 # =================================
 # CONFIGURACIÓN GLOBAL DEL MODELO IA
 # =================================
