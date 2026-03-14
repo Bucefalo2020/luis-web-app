@@ -948,9 +948,28 @@ Instrucciones obligatorias:
     try:
 
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-2.0-flash",
             contents=prompt,
-            config={"temperature": 0.0}
+            config={
+                "temperature": 0.0,
+                "response_mime_type": "application/json",
+                "response_schema": {
+                    "type": "object",
+                    "properties": {
+                        "score": {"type": "integer"},
+                        "conceptos_cubiertos": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        },
+                        "conceptos_faltantes": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        },
+                        "feedback": {"type": "string"}
+                    },
+                    "required": ["score", "feedback"]
+                }
+            }
         )
 
         resultado = response.text.strip()
@@ -960,10 +979,15 @@ Instrucciones obligatorias:
 
         print("DEBUG RESPUESTA GEMINI:", resultado)
 
+        evaluacion_json = json.loads(resultado)
+
+        puntos = int(evaluacion_json.get("score", 0))
+        feedback = evaluacion_json.get("feedback", "")
+    
         return resultado
 
-    except Exception as e:
-        print("ERROR EVALUACION IA:", str(e))
+        except Exception as e:
+            print("ERROR EVALUACION IA:", str(e))
 
         return """
 {
@@ -1430,17 +1454,11 @@ if st.session_state.submitted:
                     q.get("conceptos_clave", [])
                 )
 
-                json_match = re.search(r"\{.*\}", evaluacion, re.DOTALL)
-
-                if json_match:
-                    try:
-                        evaluacion_json = json.loads(json_match.group())
-                        puntos = int(evaluacion_json.get("score", 0))
-                        feedback = evaluacion_json.get("feedback") or evaluacion
-                    except:
-                        puntos = 0
-                        feedback = evaluacion
-                else:
+                try:
+                    evaluacion_json = json.loads(evaluacion)
+                    puntos = int(evaluacion_json.get("score", 0))
+                    feedback = evaluacion_json.get("feedback", "")
+                except:
                     puntos = 0
                     feedback = evaluacion
 
