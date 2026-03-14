@@ -313,7 +313,10 @@ if not API_KEY:
     st.error("GEMINI_API_KEY no está definida en el entorno.")
     st.stop()
 
-client = genai.Client(api_key=API_KEY)
+client = genai.Client(
+    api_key=API_KEY,
+    http_options={"api_version": "v1"}
+)
 
 # --------------------------------------------------
 # CARGA DOCUMENTO PDF
