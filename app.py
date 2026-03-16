@@ -856,7 +856,7 @@ def gemini_generate(prompt, temperature=0.0):
     # 👇 FORZAMOS PROMPT SIMPLE
     prompt = "Responde únicamente: OK"
 
-    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent"
 
     headers = {
         "x-goog-api-key": API_KEY,
