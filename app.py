@@ -848,6 +848,11 @@ def gemini_generate(prompt, temperature=0.0):
 
     API_KEY = os.getenv("GEMINI_API_KEY")
 
+    if API_KEY:
+        print("API KEY EN USO:", API_KEY[-6:])
+    else:
+        print("ERROR: API KEY NO ENCONTRADA")
+
     url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 
     headers = {
