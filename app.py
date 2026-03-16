@@ -842,59 +842,40 @@ def get_technical_metrics():
 # FUNCIONES IA
 # --------------------------------------------------
 
-def gemini_generate(prompt, temperature=0.0):
+def openai_generate(prompt, temperature=0.0):
 
-    print("FUNCION GEMINI REST EJECUTADA")
+    print("FUNCION OPENAI EJECUTADA")
 
-    API_KEY = os.getenv("GEMINI_API_KEY")
-   
+    API_KEY = os.getenv("OPENAI_API_KEY")
+
     if API_KEY:
-        print("API KEY EN USO:", API_KEY[-6:])
+        print("OPENAI KEY:", API_KEY[-6:])
     else:
-        print("ERROR: API KEY NO ENCONTRADA")
+        print("ERROR: OPENAI API KEY NO ENCONTRADA")
 
-    # 👇 FORZAMOS PROMPT SIMPLE
-    prompt = "Responde únicamente: OK"
-
-    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent"
+    url = "https://api.openai.com/v1/chat/completions"
 
     headers = {
-        "x-goog-api-key": API_KEY,
+        "Authorization": f"Bearer {API_KEY}",
         "Content-Type": "application/json"
     }
 
     payload = {
-        "contents": [
-            {
-                "parts": [
-                    {"text": prompt}
-                ]
-            }
+        "model": "gpt-4o-mini",  # eficiente y barato
+        "messages": [
+            {"role": "user", "content": prompt}
         ],
-        "generationConfig": {
-            "temperature": temperature
-        }
+        "temperature": temperature
     }
 
-    response = requests.post(url, headers=headers, json=payload, timeout=30)
-
-    print("STATUS:", response.status_code)
-    print("RESPUESTA RAW:", response.text[:500])
-
+    response = requests.post(url, headers=headers, json=payload)
     response.raise_for_status()
 
     data = response.json()
 
-    if "candidates" in data and len(data["candidates"]) > 0:
-        candidate = data["candidates"][0]
+    print("RESPUESTA OPENAI:", data)
 
-        if "content" in candidate and "parts" in candidate["content"]:
-            for part in candidate["content"]["parts"]:
-                if "text" in part:
-                    return part["text"]
-
-    return ""
-
+    return data["choices"][0]["message"]["content"]
 
 def llamar_a_luis(pregunta, modo):
 
@@ -921,7 +902,7 @@ Modo:
     """
 
     try:
-        return gemini_generate(f"{system_prompt}\n\nPregunta: {pregunta}", temperature=0.2)
+        return openai_generate(f"{system_prompt}\n\nPregunta: {pregunta}", temperature=0.2)
 
     except Exception as e:
         print("ERROR GEMINI:", str(e))
@@ -986,7 +967,7 @@ No agregues texto fuera del JSON.
 
     try:
 
-        resultado = gemini_generate(prompt, temperature=0.0)
+        resultado = openai_generate(prompt, temperature=0.0)
 
         print("RESPUESTA GEMINI RAW:", resultado)
 
