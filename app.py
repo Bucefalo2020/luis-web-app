@@ -848,7 +848,12 @@ def gemini_generate(prompt, temperature=0.0):
 
     API_KEY = os.getenv("GEMINI_API_KEY")
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={API_KEY}"
+    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+
+    headers = {
+        "x-goog-api-key": API_KEY,
+        "Content-Type": "application/json"
+    }
 
     payload = {
         "contents": [
@@ -863,12 +868,14 @@ def gemini_generate(prompt, temperature=0.0):
         }
     }
 
-    response = requests.post(url, json=payload)
+    response = requests.post(url, headers=headers, json=payload, timeout=30)
+
+    print("STATUS:", response.status_code)
+    print("RESPUESTA RAW:", response.text[:500])
+
     response.raise_for_status()
 
     data = response.json()
-
-    print("RESPUESTA COMPLETA GEMINI:", data)
 
     if "candidates" in data and len(data["candidates"]) > 0:
         candidate = data["candidates"][0]
