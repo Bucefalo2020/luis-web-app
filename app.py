@@ -892,6 +892,7 @@ def gemini_generate(prompt, temperature=0.0):
 
     return ""
 
+
 def llamar_a_luis(pregunta, modo):
 
     contexto = DOCUMENTO_BASE[:15000]
