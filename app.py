@@ -910,12 +910,8 @@ Modo:
         return openai_generate(f"{system_prompt}\n\nPregunta: {pregunta}", temperature=0.2)
 
     except Exception as e:
-        print("ERROR GEMINI:", str(e))
-
-        if "RESOURCE_EXHAUSTED" in str(e):
-            return "⚠️ El motor de IA alcanzó temporalmente el límite de uso. Intenta nuevamente en unos segundos."
-
-        return f"Error en la generación de respuesta: {str(e)}"
+        print("ERROR OPENAI:", str(e))
+        return f"Error en OpenAI: {str(e)}"
 
 def evaluar_respuesta_abierta(pregunta, respuesta_usuario, respuesta_modelo, conceptos_clave):
 
