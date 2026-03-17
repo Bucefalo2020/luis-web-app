@@ -850,6 +850,9 @@ def openai_generate(prompt, temperature=0.0):
 
     API_KEY = os.getenv("OPENAI_API_KEY")
 
+    print("DEBUG OPENAI KEY RAW:", API_KEY)
+    print("DEBUG ENV KEYS:", list(os.environ.keys()))
+
     if API_KEY:
         print("OPENAI KEY:", API_KEY[-6:])
     else:
