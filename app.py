@@ -846,6 +846,8 @@ def get_technical_metrics():
 
 def openai_generate(prompt, temperature=0.0):
 
+    print("🔥 NUEVA VERSION OPENAI V3")
+
     print("FUNCION OPENAI EJECUTADA")
 
     API_KEY = os.getenv("OPENAI_API_KEY")
@@ -877,7 +879,7 @@ def openai_generate(prompt, temperature=0.0):
 
     print("RESPUESTA OPENAI:", data)
 
-    return data["choices"][0]["message"]["content"]
+    return data["output"][0]["content"][0]["text"]
 
 def llamar_a_luis(pregunta, modo):
 
