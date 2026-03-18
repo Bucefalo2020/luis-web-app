@@ -846,21 +846,19 @@ def get_technical_metrics():
 
 def openai_generate(prompt, temperature=0.0):
 
-    print("🔥 NUEVA VERSION OPENAI V3")
-
-    print("FUNCION OPENAI EJECUTADA")
+    print("🔥 OPENAI GENERATE EJECUTANDO")
 
     API_KEY = os.getenv("OPENAI_API_KEY")
 
-    print("DEBUG OPENAI KEY RAW:", API_KEY)
-    print("DEBUG ENV KEYS:", list(os.environ.keys()))
-
-    if API_KEY:
-        print("OPENAI KEY:", API_KEY[-6:])
-    else:
-        print("ERROR: OPENAI API KEY NO ENCONTRADA")
+    if not API_KEY:
+        raise ValueError("OPENAI_API_KEY no encontrada")
 
     url = "https://api.openai.com/v1/responses"
+
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json"
+    }
 
     payload = {
         "model": "gpt-4o-mini",
@@ -871,18 +869,13 @@ def openai_generate(prompt, temperature=0.0):
     response = requests.post(url, headers=headers, json=payload)
 
     print("STATUS CODE:", response.status_code)
-        
     print("RESPONSE TEXT RAW:", response.text)
 
-    print("🔥 FORCE DEPLOY V6")
-    
     response.raise_for_status()
 
     data = response.json()
 
-    print("RESPUESTA OPENAI:", data)
-
-    # 🔥 extracción robusta
+    # 🔥 extracción robusta REAL
     if "output_text" in data:
         return data["output_text"]
 
@@ -893,7 +886,7 @@ def openai_generate(prompt, temperature=0.0):
                     if "text" in c:
                         return c["text"]
 
-    raise ValueError("No se pudo extraer texto de la respuesta de OpenAI")
+    raise ValueError("No se pudo extraer texto de OpenAI")
 
 def llamar_a_luis(pregunta, modo):
 
@@ -928,35 +921,15 @@ Modo:
 
 def evaluar_respuesta_abierta(pregunta, respuesta_usuario, respuesta_modelo, conceptos_clave):
 
+    print("🔥 ENTRO A evaluar_respuesta_abierta")
+
     prompt = f"""
 Eres evaluador técnico experto en arquitectura de software.
 
-Tu tarea es evaluar la respuesta de un candidato comparándola con la respuesta modelo
-y verificando cobertura de conceptos técnicos clave.
+Evalúa la respuesta del candidato comparándola con la respuesta modelo.
 
-Instrucciones de evaluación:
-
-1. Evalúa principalmente la EXACTITUD CONCEPTUAL.
-2. No penalices diferencias de redacción si el significado es correcto.
-3. Reconoce respuestas parciales correctas aunque estén incompletas.
-4. Verifica explícitamente si la respuesta cubre los siguientes conceptos clave:
+Conceptos clave:
 {conceptos_clave}
-
-Criterios de puntuación:
-
-Score 2 (Correcta):
-- La idea central es correcta
-- Cubre adecuadamente la mayoría de los conceptos clave
-- No contiene errores técnicos graves
-
-Score 1 (Parcial):
-- Respuesta conceptualmente válida pero incompleta
-- Cubre algunos conceptos clave pero omite otros
-
-Score 0 (Incorrecta):
-- Concepto central erróneo
-- No cubre conceptos clave esenciales
-- Contiene errores técnicos relevantes
 
 Pregunta:
 {pregunta}
@@ -967,7 +940,7 @@ Respuesta modelo:
 Respuesta del usuario:
 {respuesta_usuario}
 
-Devuelve ÚNICAMENTE JSON válido con este formato:
+Devuelve SOLO JSON:
 
 {{
 "score": 0,
@@ -975,64 +948,44 @@ Devuelve ÚNICAMENTE JSON válido con este formato:
 "conceptos_faltantes": [],
 "feedback": ""
 }}
-
-No agregues texto fuera del JSON.
 """
 
-    print("🚨 ENTRO A evaluar_respuesta_abierta")
-
     try:
+        print("🔥 LLAMANDO A OPENAI")
         resultado = openai_generate(prompt, temperature=0.0)
 
         print("RESPUESTA OPENAI RAW:", resultado)
 
         if not resultado:
-            raise ValueError("Respuesta vacía de OpenAI")
+            raise ValueError("Respuesta vacía")
 
+        # 🧠 LIMPIEZA ROBUSTA
         resultado = resultado.strip()
-
-        # 🔥 LIMPIEZA ROBUSTA DEL OUTPUT DEL MODELO
         resultado = re.sub(r"^```json", "", resultado)
         resultado = re.sub(r"```$", "", resultado)
-        resultado = resultado.strip()
 
-        # 🔥 EXTRAER SOLO EL JSON VÁLIDO
         match = re.search(r"\{.*\}", resultado, re.DOTALL)
 
-        if match:
-            resultado = match.group(0)
-        else:
-            raise ValueError("No se encontró JSON válido en la respuesta del modelo")
+        if not match:
+            raise ValueError("No se encontró JSON")
 
-        try:
-            data = json.loads(resultado)
-            return json.dumps(data)
+        json_str = match.group(0)
 
-        except Exception as parse_error:
-            print("ERROR PARSE JSON:", parse_error)
-            print("RESPUESTA ORIGINAL:", resultado)
+        data = json.loads(json_str)
 
-            return """
-{
-"score": 1,
-"conceptos_cubiertos": [],
-"conceptos_faltantes": [],
-"feedback": "Formato inesperado en la respuesta del modelo"
-}
-"""
+        return json.dumps(data)
 
     except Exception as e:
-        print("ERROR EVALUACION IA:", str(e))
+        print("ERROR EVALUACION:", str(e))
 
         return """
 {
 "score": 1,
 "conceptos_cubiertos": [],
 "conceptos_faltantes": [],
-"feedback": "La evaluación automática está temporalmente limitada por el motor de IA."
+"feedback": "Fallback por error en evaluación IA"
 }
 """
-
 def generar_preguntas_mc():
 
     contexto = DOCUMENTO_BASE[:MAX_CONTEXT_GENERACION]
