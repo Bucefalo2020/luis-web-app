@@ -977,7 +977,19 @@ No agregues texto fuera del JSON.
             raise ValueError("Respuesta vacía de OpenAI")
 
         resultado = resultado.strip()
-        resultado = resultado.replace("```json", "").replace("```", "").strip()
+
+        # 🔥 LIMPIEZA ROBUSTA DEL OUTPUT DEL MODELO
+        resultado = re.sub(r"^```json", "", resultado)
+        resultado = re.sub(r"```$", "", resultado)
+        resultado = resultado.strip()
+
+        # 🔥 EXTRAER SOLO EL JSON VÁLIDO
+        match = re.search(r"\{.*\}", resultado, re.DOTALL)
+
+        if match:
+            resultado = match.group(0)
+        else:
+            raise ValueError("No se encontró JSON válido en la respuesta del modelo")
 
         try:
             data = json.loads(resultado)
