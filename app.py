@@ -873,6 +873,8 @@ def openai_generate(prompt, temperature=0.0):
     print("STATUS CODE:", response.status_code)
         
     print("RESPONSE TEXT RAW:", response.text)
+
+    print("🔥 FORCE DEPLOY V6")
     
     response.raise_for_status()
 
