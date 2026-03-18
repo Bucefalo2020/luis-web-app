@@ -1733,6 +1733,13 @@ if modo == "Evaluación técnica":
 
                 conceptos_clave = contenido.get("conceptos_clave", [])
 
+                # 🔍 PRUEBA DEFINITIVA (AQUÍ EXACTAMENTE)
+                import os
+                print("===== TODAS LAS VARIABLES =====")
+                for k in os.environ.keys():
+                    print(k)
+                print("===== FIN VARIABLES =====")
+
                 resultado = evaluar_respuesta_abierta(
                     pregunta_eval,
                     respuesta_usuario,
