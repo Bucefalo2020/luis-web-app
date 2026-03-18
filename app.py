@@ -1555,7 +1555,7 @@ if st.session_state.submitted:
     Informe Ejecutivo de Desempeño
     </h3>
 
-    **Evaluado:** {nombre}
+    <p><strong>Evaluado:</strong> {nombre}</p>
 
     <span style="color:#6B7280;">
     Plataforma de Evaluación Técnica — Zurich Santander Seguros México
