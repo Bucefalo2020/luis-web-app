@@ -1759,6 +1759,8 @@ if modo == "Evaluación técnica":
                     conceptos_clave
                 )
 
+                print("🚨 VERSION NUEVA FRONT ACTIVADA")  # 👈 AQUÍ EXACTO
+
                 st.markdown("### 📊 Resultado de evaluación")
 
                 try:
