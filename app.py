@@ -20,6 +20,7 @@ from reportlab.lib.pagesizes import letter
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import hashlib
+print("BOOT CHECK OPENAI:", os.getenv("OPENAI_API_KEY"))
 
 print("VERSION APP DEBUG 14-MAR")
 print("TODAS LAS VARIABLES DISPONIBLES:")
@@ -848,6 +849,16 @@ def openai_generate(prompt, temperature=0.0):
 
     print("🔥 OPENAI GENERATE EJECUTANDO")
 
+    # 🔍 DEBUG DE VARIABLES DE ENTORNO (AQUÍ)
+    import os
+    print("===== DEBUG ENV =====")
+    for k in os.environ.keys():
+        if "OPENAI" in k:
+            print(f"{k} = {os.environ.get(k)}")
+
+    print("VALOR DIRECTO:", os.getenv("OPENAI_API_KEY"))
+    print("=====================")
+    
     API_KEY = os.getenv("OPENAI_API_KEY")
 
     if not API_KEY:
