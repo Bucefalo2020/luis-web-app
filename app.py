@@ -1651,11 +1651,7 @@ color:{color};">
 
                 st.markdown(
                     f"""
-                    <div style="
-                        background-color:#FFFFFF;
-                        padding:15px;
-                        border-radius:6px;
-                        border:1px solid #E5E7EB;">
+                    <div style="background-color:#FFFFFF; padding:15px; border-radius:6px; border:1px solid #E5E7EB;">
                         {cor}
                     </div>
                     """,
