@@ -967,9 +967,8 @@ No agregues texto fuera del JSON.
 """
 
     print("🚨 ENTRO A evaluar_respuesta_abierta")
-    
-    try:
 
+    try:
         resultado = openai_generate(prompt, temperature=0.0)
 
         print("RESPUESTA OPENAI RAW:", resultado)
@@ -978,8 +977,6 @@ No agregues texto fuera del JSON.
             raise ValueError("Respuesta vacía de OpenAI")
 
         resultado = resultado.strip()
-
-        # limpiar markdown si el modelo lo agrega
         resultado = resultado.replace("```json", "").replace("```", "").strip()
 
         try:
@@ -989,18 +986,17 @@ No agregues texto fuera del JSON.
         except Exception as parse_error:
             print("ERROR PARSE JSON:", parse_error)
             print("RESPUESTA ORIGINAL:", resultado)
-            return resultado  # 👈 clave
-        
+
+            return """
 {
 "score": 1,
 "conceptos_cubiertos": [],
 "conceptos_faltantes": [],
-"feedback": "La evaluación automática generó un resultado parcial debido a un formato inesperado en la respuesta del modelo."
+"feedback": "Formato inesperado en la respuesta del modelo"
 }
 """
 
     except Exception as e:
-
         print("ERROR EVALUACION IA:", str(e))
 
         return """
@@ -1008,7 +1004,7 @@ No agregues texto fuera del JSON.
 "score": 1,
 "conceptos_cubiertos": [],
 "conceptos_faltantes": [],
-"feedback": "La evaluación automática está temporalmente limitada por el motor de IA. Se asignó una evaluación parcial para continuar el proceso."
+"feedback": "La evaluación automática está temporalmente limitada por el motor de IA."
 }
 """
 
