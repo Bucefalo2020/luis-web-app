@@ -879,7 +879,18 @@ def openai_generate(prompt, temperature=0.0):
 
     print("RESPUESTA OPENAI:", data)
 
-    return data["output"][0]["content"][0]["text"]
+    # 🔥 extracción robusta
+    if "output_text" in data:
+        return data["output_text"]
+
+    elif "output" in data:
+        for item in data["output"]:
+            if "content" in item:
+                for c in item["content"]:
+                    if "text" in c:
+                        return c["text"]
+
+    raise ValueError("No se pudo extraer texto de la respuesta de OpenAI")
 
 def llamar_a_luis(pregunta, modo):
 
