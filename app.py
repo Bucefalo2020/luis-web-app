@@ -858,18 +858,11 @@ def openai_generate(prompt, temperature=0.0):
     else:
         print("ERROR: OPENAI API KEY NO ENCONTRADA")
 
-    url = "https://api.openai.com/v1/chat/completions"
-
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json"
-    }
+    url = "https://api.openai.com/v1/responses"
 
     payload = {
-        "model": "gpt-4o-mini",  # eficiente y barato
-        "messages": [
-            {"role": "user", "content": prompt}
-        ],
+        "model": "gpt-4o-mini",
+        "input": prompt,
         "temperature": temperature
     }
 
