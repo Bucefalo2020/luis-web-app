@@ -874,6 +874,10 @@ def openai_generate(prompt, temperature=0.0):
     }
 
     response = requests.post(url, headers=headers, json=payload)
+
+    print("STATUS CODE:", response.status_code)
+    print("RESPONSE TEXT:", response.text)
+
     response.raise_for_status()
 
     data = response.json()
