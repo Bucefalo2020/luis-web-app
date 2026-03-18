@@ -1765,9 +1765,21 @@ if modo == "Evaluación técnica":
                     import re
                     import json
 
-                    data = json.loads(resultado)
+                    try:
+                        data = json.loads(resultado)
 
-                    print("RESPUESTA GEMINI:", resultado)
+                        print("RESPUESTA OPENAI:", data)
+
+                    except Exception as e:
+                        print("ERROR PARSE FRONT:", e)
+                        print("RESPUESTA CRUDA:", resultado)
+
+                        data = {
+                            "score": 1,
+                            "conceptos_cubiertos": [],
+                            "conceptos_faltantes": [],
+                            "feedback": "Error al procesar respuesta del modelo"
+                        }
 
                     score = data.get("score")
                     feedback = data.get("feedback")
