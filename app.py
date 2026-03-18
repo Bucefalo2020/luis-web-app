@@ -966,14 +966,16 @@ Devuelve ÚNICAMENTE JSON válido con este formato:
 No agregues texto fuera del JSON.
 """
 
+    print("🚨 ENTRO A evaluar_respuesta_abierta")
+    
     try:
 
         resultado = openai_generate(prompt, temperature=0.0)
 
-        print("RESPUESTA GEMINI RAW:", resultado)
+        print("RESPUESTA OPENAI RAW:", resultado)
 
         if not resultado:
-            raise ValueError("Respuesta vacía de Gemini")
+            raise ValueError("Respuesta vacía de OpenAI")
 
         resultado = resultado.strip()
 
@@ -985,10 +987,10 @@ No agregues texto fuera del JSON.
             return json.dumps(data)
 
         except Exception as parse_error:
-
             print("ERROR PARSE JSON:", parse_error)
-
-            return """
+            print("RESPUESTA ORIGINAL:", resultado)
+            return resultado  # 👈 clave
+        
 {
 "score": 1,
 "conceptos_cubiertos": [],
