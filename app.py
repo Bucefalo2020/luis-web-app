@@ -20,6 +20,14 @@ from reportlab.lib.pagesizes import letter
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import hashlib
+import streamlit as st
+
+st.title("Evaluación Técnica IA")
+
+if st.button("TEST OPENAI"):
+    resultado_test = openai_generate("Di hola en una línea")
+    st.write("RESULTADO TEST:", resultado_test)
+    
 print("BOOT CHECK OPENAI:", os.getenv("OPENAI_API_KEY"))
 
 print("VERSION APP DEBUG 14-MAR")
