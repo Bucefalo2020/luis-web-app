@@ -867,9 +867,10 @@ def openai_generate(prompt, temperature=0.0):
     url = "https://api.openai.com/v1/responses"
 
     headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json"
-    }
+    "Authorization": f"Bearer {API_KEY}",
+    "Content-Type": "application/json",
+    "OpenAI-Project": "proj_i90uMtmwaV4rCJvxtdqLR3Fn"
+}
 
     payload = {
         "model": "gpt-4o-mini",
