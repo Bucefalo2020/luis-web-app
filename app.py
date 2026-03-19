@@ -886,33 +886,33 @@ def openai_generate(prompt, temperature=0.0):
 
     data = response.json()
 
-print("JSON RESPONSE:", data)
+    print("JSON RESPONSE:", data)
 
-texts = []
+    texts = []
 
-# 🔹 Caso 1: Responses API (nuevo)
-if "output" in data:
-    for item in data["output"]:
-        if "content" in item:
-            for c in item["content"]:
-                if c.get("type") in ["output_text", "text"]:
-                    texts.append(c.get("text", ""))
+    # 🔹 Caso 1: Responses API (nuevo)
+    if "output" in data:
+        for item in data["output"]:
+            if "content" in item:
+                for c in item["content"]:
+                    if c.get("type") in ["output_text", "text"]:
+                        texts.append(c.get("text", ""))
 
-# 🔹 Caso 2: Chat Completions (MUY IMPORTANTE en tu caso)
-if "choices" in data:
-    for choice in data["choices"]:
-        message = choice.get("message", {})
-        if "content" in message:
-            texts.append(message["content"])
+    # 🔹 Caso 2: Chat Completions (MUY IMPORTANTE en tu caso)
+    if "choices" in data:
+        for choice in data["choices"]:
+            message = choice.get("message", {})
+            if "content" in message:
+                texts.append(message["content"])
 
-# 🔹 Caso 3: output_text directo
-if "output_text" in data:
-    texts.append(data["output_text"])
+    # 🔹 Caso 3: output_text directo
+    if "output_text" in data:
+        texts.append(data["output_text"])
 
-if texts:
-    return "\n".join(texts)
+    if texts:
+        return "\n".join(texts)
 
-raise ValueError("No se pudo extraer texto de OpenAI")
+    raise ValueError("No se pudo extraer texto de OpenAI")
 
 def llamar_a_luis(pregunta, modo):
 
