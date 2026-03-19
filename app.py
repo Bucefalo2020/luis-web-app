@@ -886,16 +886,24 @@ def openai_generate(prompt, temperature=0.0):
 
     data = response.json()
 
-    # 🔥 extracción robusta REAL
-    if "output_text" in data:
-        return data["output_text"]
+    print("JSON RESPONSE:", data)
 
-    elif "output" in data:
+    texts = []
+
+    # Caso 1: output estructurado
+    if "output" in data:
         for item in data["output"]:
             if "content" in item:
                 for c in item["content"]:
-                    if "text" in c:
-                        return c["text"]
+                    if c.get("type") in ["output_text", "text"]:
+                        texts.append(c.get("text", ""))
+
+    # Caso 2: output_text directo
+    if "output_text" in data:
+        texts.append(data["output_text"])
+
+    if texts:
+        return "\n".join(texts)
 
     raise ValueError("No se pudo extraer texto de OpenAI")
 
