@@ -46,13 +46,6 @@ MODEL_GEMINI = "gemini-1.5-flash"
 MAX_CONTEXT_GENERACION = 3000
 MAX_CONTEXT_CHAT = 15000
 
-# CONFIGURACIÓN GLOBAL DE LA APP
-st.set_page_config(
-    page_title="Plataforma de Asistencia Inteligente",
-    layout="wide",
-    page_icon="🤖"
-)
-
 st.markdown(
     """
     <style>
