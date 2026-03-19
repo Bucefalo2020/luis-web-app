@@ -20,7 +20,12 @@ from reportlab.lib.pagesizes import letter
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import hashlib
-import streamlit as st
+
+st.set_page_config(
+    page_title="Plataforma de Asistencia Inteligente",
+    layout="wide",
+    page_icon="🧠"
+)
 
 st.title("Evaluación Técnica IA")
 
@@ -29,7 +34,6 @@ if st.button("TEST OPENAI"):
     st.write("RESULTADO TEST:", resultado_test)
     
 print("BOOT CHECK OPENAI:", os.getenv("OPENAI_API_KEY"))
-
 print("VERSION APP DEBUG 14-MAR")
 print("TODAS LAS VARIABLES DISPONIBLES:")
 print(os.environ)
@@ -858,7 +862,6 @@ def openai_generate(prompt, temperature=0.0):
     print("🔥 OPENAI GENERATE EJECUTANDO")
 
     # 🔍 DEBUG DE VARIABLES DE ENTORNO (AQUÍ)
-    import os
     print("===== DEBUG ENV =====")
     for k in os.environ.keys():
         if "OPENAI" in k:
@@ -881,7 +884,7 @@ def openai_generate(prompt, temperature=0.0):
 }
 
     payload = {
-        "model": "gpt-4o-mini",
+        "model": "gpt-4.1-mini",
         "input": prompt,
         "temperature": temperature
     }
