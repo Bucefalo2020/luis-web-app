@@ -873,7 +873,6 @@ def openai_generate(prompt, temperature=0.0):
     headers = {
     "Authorization": f"Bearer {API_KEY}",
     "Content-Type": "application/json",
-    "OpenAI-Project": "proj_i90uMtmwaV4rCJvxtdqLR3Fn"
 }
 
     payload = {
