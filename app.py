@@ -343,6 +343,17 @@ def cargar_documento():
 
 DOCUMENTO_BASE = cargar_documento()
 
+# 🔍 DEBUG DOCUMENTO (TEMPORAL)
+st.write("LONGITUD DOCUMENTO:", len(DOCUMENTO_BASE))
+
+if "renovación" in DOCUMENTO_BASE.lower():
+    st.write("✅ TEXTO 'renovación' ENCONTRADO")
+else:
+    st.write("❌ TEXTO 'renovación' NO ENCONTRADO")
+
+st.write("PRIMEROS 1000 CARACTERES:")
+st.write(DOCUMENTO_BASE[:1000])
+
 # --------------------------------------------------
 # BANCO DE PREGUNTAS
 # --------------------------------------------------
