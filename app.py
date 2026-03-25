@@ -21,6 +21,8 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import hashlib
 
+DEBUG = os.getenv("DEBUG_MODE", "false").lower() == "true"
+
 st.set_page_config(
     page_title="Plataforma de Asistencia Inteligente",
     layout="wide",
@@ -29,14 +31,12 @@ st.set_page_config(
 
 st.title("Evaluación Técnica IA")
 
-if st.button("TEST OPENAI"):
-    resultado_test = openai_generate("Di hola en una línea")
-    st.write("RESULTADO TEST:", resultado_test)
-    
-print("BOOT CHECK OPENAI:", os.getenv("OPENAI_API_KEY"))
-print("VERSION APP DEBUG 14-MAR")
-print("TODAS LAS VARIABLES DISPONIBLES:")
-print(os.environ)
+if DEBUG:
+    print("APP INICIADA EN MODO DEBUG")
+
+    if st.button("TEST OPENAI"):
+        resultado_test = openai_generate("Di hola en una línea")
+        st.write("RESULTADO TEST:", resultado_test)
 
 # =================================
 # CONFIGURACIÓN GLOBAL DEL MODELO IA
@@ -123,6 +123,18 @@ def get_db_connection():
 # =====================================
 def get_random_active_question(nivel):
 
+    if not os.getenv("DATABASE_URL"):
+        return {
+            "pregunta": "¿Cómo funciona la renovación automática de una póliza?",
+            "respuesta_correcta": "Se renueva automáticamente salvo cancelación previa.",
+            "conceptos_clave": [
+                "renovación automática",
+                "aviso previo",
+                "vigencia",
+                "condiciones"
+            ]
+        }
+
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -188,9 +200,10 @@ def init_db():
     cur.close()
     conn.close()
     
-if "db_initialized" not in st.session_state:
-    init_db()
-    st.session_state["db_initialized"] = True
+if os.getenv("DATABASE_URL"):
+    if "db_initialized" not in st.session_state:
+        init_db()
+        st.session_state["db_initialized"] = True
 
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
@@ -225,32 +238,41 @@ def ensure_demo_user():
     return user_id
 
 def authenticate_user(email, password):
+
+    # 🔥 MODO LOCAL SIN DB
+    if not os.getenv("DATABASE_URL"):
+        return {
+            "id": "demo_local",
+            "email": email,
+            "role": "admin"
+        }
+
+    # ===== MODO NORMAL (Railway) =====
     conn = get_db_connection()
     cur = conn.cursor()
 
-    cur.execute("""
-        SELECT id, password_hash, role
-        FROM users
-        WHERE email = %s;
-    """, (email,))
-
+    cur.execute("SELECT id, password_hash FROM users WHERE email = %s", (email,))
     user = cur.fetchone()
 
-    cur.close()
     conn.close()
 
-    if user and user["password_hash"] == hash_password(password):
-        return {
-            "id": user["id"],
-            "role": user["role"]
-        }
+    if user and verify_password(password, user["password_hash"]):
+        return user
 
     return None
 
 if "demo_user_id" not in st.session_state:
-    st.session_state["demo_user_id"] = ensure_demo_user()
+    if os.getenv("DATABASE_URL"):
+        st.session_state["demo_user_id"] = ensure_demo_user()
+    else:
+        st.session_state["demo_user_id"] = "demo_local"
 
 def save_conversation(user_id, question, response):
+
+    # 🔥 MODO LOCAL (sin DB)
+    if not os.getenv("DATABASE_URL"):
+        return
+    
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -264,6 +286,10 @@ def save_conversation(user_id, question, response):
     conn.close()
 
 def save_technical_evaluation(user_id, pregunta, respuesta_usuario, respuesta_modelo, score, feedback):
+
+    if not os.getenv("DATABASE_URL"):
+        return
+
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -278,6 +304,10 @@ def save_technical_evaluation(user_id, pregunta, respuesta_usuario, respuesta_mo
     conn.close()
 
 def get_recent_conversations(limit=10):
+
+    if not os.getenv("DATABASE_URL"):
+        return []
+    
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -296,6 +326,14 @@ def get_recent_conversations(limit=10):
     return rows
 
 def get_metrics():
+
+    if not os.getenv("DATABASE_URL"):
+        return {
+            "total_consultas": 0,
+            "primera_consulta": "N/A",
+            "ultima_consulta": "N/A"
+        }
+    
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -342,17 +380,6 @@ def cargar_documento():
     return texto
 
 DOCUMENTO_BASE = cargar_documento()
-
-# 🔍 DEBUG DOCUMENTO (TEMPORAL)
-st.write("LONGITUD DOCUMENTO:", len(DOCUMENTO_BASE))
-
-if "renovación" in DOCUMENTO_BASE.lower():
-    st.write("✅ TEXTO 'renovación' ENCONTRADO")
-else:
-    st.write("❌ TEXTO 'renovación' NO ENCONTRADO")
-
-st.write("PRIMEROS 1000 CARACTERES:")
-st.write(DOCUMENTO_BASE[:1000])
 
 # --------------------------------------------------
 # BANCO DE PREGUNTAS
@@ -837,6 +864,17 @@ def generar_examen():
 # --------------------------------------------------
 
 def get_technical_metrics():
+
+    # 🔥 MODO LOCAL (sin DB)
+    if not os.getenv("DATABASE_URL"):
+        return {
+            "total": 0,
+            "promedio": 0,
+            "correctas": 0,
+            "parciales": 0,
+            "incorrectas": 0
+        }
+    
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -863,16 +901,8 @@ def get_technical_metrics():
 
 def openai_generate(prompt, temperature=0.0):
 
-    print("🔥 OPENAI GENERATE EJECUTANDO")
-
-    # 🔍 DEBUG DE VARIABLES DE ENTORNO (AQUÍ)
-    print("===== DEBUG ENV =====")
-    for k in os.environ.keys():
-        if "OPENAI" in k:
-            print(f"{k} = {os.environ.get(k)}")
-
-    print("VALOR DIRECTO:", os.getenv("OPENAI_API_KEY"))
-    print("=====================")
+    if DEBUG:
+        print("🔥 OPENAI GENERATE EJECUTANDO")
     
     API_KEY = os.getenv("OPENAI_API_KEY")
 
@@ -893,9 +923,11 @@ def openai_generate(prompt, temperature=0.0):
     }
 
     response = requests.post(url, headers=headers, json=payload)
-
-    print("STATUS CODE:", response.status_code)
-    print("RESPONSE TEXT RAW:", response.text)
+    
+    if DEBUG:
+        print("🔵 STATUS CODE:", response.status_code)
+        print("🔵 RAW RESPONSE (primeros 500 chars):")
+        print(response.text[:500])
 
     response.raise_for_status()
 
@@ -925,7 +957,12 @@ def openai_generate(prompt, temperature=0.0):
         texts.append(data["output_text"])
 
     if texts:
+        if DEBUG:
+            print("🟢 TEXTO EXTRAÍDO CORRECTAMENTE")
         return "\n".join(texts)
+
+    if DEBUG:
+        print("❌ NO SE PUDO EXTRAER TEXTO DE OPENAI")
 
     raise ValueError("No se pudo extraer texto de OpenAI")
 
@@ -939,22 +976,34 @@ def llamar_a_luis(pregunta, modo):
         instruccion_modo = "Responde como asesor experto."
 
     system_prompt = f"""
-Eres Luis, coach experto del producto Hogar Protegido 2020.
+Eres Luis, coach experto en seguros del producto Hogar Protegido Santander.
 
-Reglas:
-- Usa solo información del documento.
-- Si no está en el documento responde:
-"No encontré esa información en las condiciones generales."
+Tu tarea es responder EXCLUSIVAMENTE con base en el documento proporcionado.
 
-Documento:
+INSTRUCCIONES CRÍTICAS:
+
+1. Busca la respuesta dentro del contexto.
+2. Si la información existe, debes explicarla claramente.
+3. NO digas "no encontré información" si el contenido está presente.
+4. Resume y explica en lenguaje claro para un asesor comercial.
+5. Si la información es parcial, responde con lo disponible.
+
+CONTEXTO:
+---------------------
 {contexto}
+---------------------
 
-Modo:
+MODO:
 {instruccion_modo}
-    """
+
+PREGUNTA:
+{pregunta}
+
+RESPUESTA:
+"""
 
     try:
-        return openai_generate(f"{system_prompt}\n\nPregunta: {pregunta}", temperature=0.2)
+        return openai_generate(system_prompt, temperature=0.2)
 
     except Exception as e:
         print("ERROR OPENAI:", str(e))
@@ -965,37 +1014,41 @@ def evaluar_respuesta_abierta(pregunta, respuesta_usuario, respuesta_modelo, con
     print("🔥 ENTRO A evaluar_respuesta_abierta")
 
     prompt = f"""
-Eres evaluador técnico experto en arquitectura de software.
+    Eres un evaluador técnico experto en seguros.
 
-Evalúa la respuesta del candidato comparándola con la respuesta modelo.
+    Evalúa la respuesta del candidato en 5 dimensiones:
 
-Conceptos clave:
-{conceptos_clave}
+    1. Cobertura conceptual (¿incluye los elementos clave?)
+    2. Precisión técnica (¿es correcta?)
+    3. Uso de términos contractuales
+    4. Claridad comunicativa
+    5. Orientación comercial
 
-Pregunta:
-{pregunta}
+    Devuelve SOLO un JSON así:
 
-Respuesta modelo:
-{respuesta_modelo}
+    {{
+        "cobertura": 0,
+        "precision": 0,
+        "terminos": 0,
+        "claridad": 0,
+        "comercial": 0,
+        "justificacion": ""
+    }}
 
-Respuesta del usuario:
-{respuesta_usuario}
+    Pregunta:
+    {pregunta}
 
-Devuelve SOLO JSON:
-
-{{
-"score": 0,
-"conceptos_cubiertos": [],
-"conceptos_faltantes": [],
-"feedback": ""
-}}
-"""
+    Respuesta del candidato:
+    {respuesta_usuario}
+    """
 
     try:
         print("🔥 LLAMANDO A OPENAI")
         resultado = openai_generate(prompt, temperature=0.0)
-
-        print("RESPUESTA OPENAI RAW:", resultado)
+        
+        if DEBUG:
+            print("🧾 RESPUESTA IA RAW:")
+            print(resultado)
 
         if not resultado:
             raise ValueError("Respuesta vacía")
@@ -1014,19 +1067,62 @@ Devuelve SOLO JSON:
 
         data = json.loads(json_str)
 
+        # -------------------------------
+        # SCORING EXPERTO
+        # -------------------------------
+
+        PESOS = {
+            "cobertura": 0.30,
+            "precision": 0.25,
+            "terminos": 0.20,
+            "claridad": 0.15,
+            "comercial": 0.10
+        }
+
+        score_final = (
+            data.get("cobertura", 0) * PESOS["cobertura"] +
+            data.get("precision", 0) * PESOS["precision"] +
+            data.get("terminos", 0) * PESOS["terminos"] +
+            data.get("claridad", 0) * PESOS["claridad"] +
+            data.get("comercial", 0) * PESOS["comercial"]
+        )
+
+        score_10 = round(score_final * 5, 2)
+
+        # Clasificación
+        if score_10 >= 8:
+            nivel = "Excelente"
+        elif score_10 >= 6:
+            nivel = "Competente"
+        elif score_10 >= 4:
+            nivel = "Básico"
+        else:
+            nivel = "Deficiente"
+
+        # Agregar al resultado
+        data["score_total"] = score_10
+        data["nivel"] = nivel
+
         return json.dumps(data)
 
     except Exception as e:
-        print("ERROR EVALUACION:", str(e))
+        if DEBUG:
+            print("❌ ERROR EVALUACION:", str(e))
+            print("🧾 RESPUESTA CRUDA IA:")
+        if DEBUG and "resultado" in locals():
+            print("RESPUESTA IA:", resultado)
 
-        return """
-{
-"score": 1,
-"conceptos_cubiertos": [],
-"conceptos_faltantes": [],
-"feedback": "Fallback por error en evaluación IA"
-}
-"""
+        return json.dumps({
+            "cobertura": 1,
+            "precision": 1,
+            "terminos": 1,
+            "claridad": 1,
+            "comercial": 1,
+            "score_total": 5,
+            "nivel": "Fallback",
+            "justificacion": "Fallback por error en evaluación IA"
+        })
+    
 def generar_preguntas_mc():
 
     contexto = DOCUMENTO_BASE[:MAX_CONTEXT_GENERACION]
@@ -1485,11 +1581,32 @@ if st.session_state.submitted:
 
                 try:
                     evaluacion_json = json.loads(evaluacion)
-                    puntos = int(evaluacion_json.get("score", 0))
-                    feedback = evaluacion_json.get("feedback", "")
-                except:
+
+                    score_total = evaluacion_json.get("score_total", 0)
+
+                    try:
+                        score_total = float(score_total)
+                    except:
+                        score_total = 0
+
+                    # Normalización a escala actual (0–2)
+                    if score_total >= 8:
+                        puntos = 2
+                    elif score_total >= 5:
+                        puntos = 1
+                    else:
+                        puntos = 0
+
+                    feedback = evaluacion_json.get(
+                        "justificacion",
+                        evaluacion_json.get("feedback", "")
+                    )
+
+                except Exception as e:
+                    print("ERROR PARSE EVALUACION:", e)
+
                     puntos = 0
-                    feedback = evaluacion
+                    feedback = "Error al procesar evaluación"
 
                 score += puntos
                 acierto = puntos > 0
@@ -1559,7 +1676,7 @@ if st.session_state.submitted:
     nombre = st.session_state.get("usuario", "Usuario")
 
     with col_logo:
-        st.image("assets/logo_zurich_santander_horizontal.png", use_column_width=True)
+        st.image("assets/logo_zurich_santander_horizontal.png", use_container_width=True)
 
     with col_info:
         
@@ -1709,8 +1826,8 @@ if modo == "Evaluación técnica":
 
     if st.session_state.get("pregunta_actual"):
 
-        contenido = st.session_state.pregunta_actual["contenido"]
-        pregunta_eval = contenido["pregunta"]
+        contenido = st.session_state.pregunta_actual["pregunta"]
+        pregunta_eval = contenido
 
         st.markdown("### 📝 Pregunta asignada automáticamente:")
         st.info(pregunta_eval)
@@ -1733,8 +1850,11 @@ if modo == "Evaluación técnica":
             # VALIDACIÓN MÍNIMA DE RESPUESTA
             # --------------------------------
 
+            pregunta_actual = st.session_state.pregunta_actual
+
+            min_palabras = pregunta_actual.get("min_palabras", 30)
+
             palabras = len(respuesta_usuario.split())
-            min_palabras = contenido.get("min_palabras", 100)
 
             if palabras < min_palabras:
                 st.warning(f"La respuesta debe contener al menos {min_palabras} palabras.")
@@ -1746,12 +1866,11 @@ if modo == "Evaluación técnica":
 
             if pregunta_eval in st.session_state.preguntas_respondidas:
                 st.error("Esta pregunta ya fue evaluada. Avance a la siguiente pregunta.")
-            else:            
+            else:
 
                 # --------------------------------
                 # 1️⃣ Generar respuesta modelo
                 # --------------------------------
-
                 respuesta_modelo = llamar_a_luis(
                     pregunta_eval,
                     "Evaluación técnica"
@@ -1760,15 +1879,8 @@ if modo == "Evaluación técnica":
                 # --------------------------------
                 # 2️⃣ Evaluar respuesta del usuario
                 # --------------------------------
-
-                conceptos_clave = contenido.get("conceptos_clave", [])
-
-                # 🔍 PRUEBA DEFINITIVA (AQUÍ EXACTAMENTE)
-                import os
-                print("===== TODAS LAS VARIABLES =====")
-                for k in os.environ.keys():
-                    print(k)
-                print("===== FIN VARIABLES =====")
+                pregunta_actual = st.session_state.pregunta_actual
+                conceptos_clave = pregunta_actual.get("conceptos_clave", [])
 
                 resultado = evaluar_respuesta_abierta(
                     pregunta_eval,
@@ -1777,88 +1889,84 @@ if modo == "Evaluación técnica":
                     conceptos_clave
                 )
 
-                print("🚨 VERSION NUEVA FRONT ACTIVADA")  # 👈 AQUÍ EXACTO
-
                 st.markdown("### 📊 Resultado de evaluación")
 
                 try:
-                    import re
-                    import json
+                    evaluacion_json = json.loads(resultado)
+
+                    # -------------------------------
+                    # SCORING NORMALIZADO
+                    # -------------------------------
+                    score_total = evaluacion_json.get("score_total", 0)
 
                     try:
-                        data = json.loads(resultado)
+                        score_total = float(score_total)
+                    except:
+                        score_total = 0
 
-                        print("RESPUESTA OPENAI:", data)
-
-                    except Exception as e:
-                        print("ERROR PARSE FRONT:", e)
-                        print("RESPUESTA CRUDA:", resultado)
-
-                        data = {
-                            "score": 1,
-                            "conceptos_cubiertos": [],
-                            "conceptos_faltantes": [],
-                            "feedback": "Error al procesar respuesta del modelo"
-                        }
-
-                    score = data.get("score")
-                    feedback = data.get("feedback")
-
-                    conceptos_cubiertos = data.get("conceptos_cubiertos", [])
-                    conceptos_faltantes = data.get("conceptos_faltantes", [])
-
-                    # Guardar en DB
-                    conn = get_db_connection()
-                    cur = conn.cursor()
-
-                    cur.execute("""
-                        INSERT INTO technical_evaluations
-                        (user_id, pregunta, respuesta_usuario, respuesta_modelo, score, feedback)
-                        VALUES (%s, %s, %s, %s, %s, %s);
-                    """, (
-                        st.session_state["user"]["id"],
-                        pregunta_eval,
-                        respuesta_usuario,
-                        respuesta_modelo,
-                        score,
-                        feedback
-                    ))
-
-                    conn.commit()
-                    cur.close()
-                    conn.close()
-
-                    # Registrar intento
-                    st.session_state.preguntas_respondidas.add(pregunta_eval)
-
-                    # Mostrar resultado
-                    if score == 2:
-                        st.success(f"Score: {score} – Respuesta correcta")
-                    elif score == 1:
-                        st.warning(f"Score: {score} – Respuesta parcialmente correcta")
+                    if score_total >= 8:
+                        puntos = 2
+                    elif score_total >= 5:
+                        puntos = 1
                     else:
-                        st.error(f"Score: {score} – Respuesta incorrecta")
+                        puntos = 0
 
-                    st.markdown("**Retroalimentación técnica:**")
-                    st.write(feedback)
+                    feedback = evaluacion_json.get(
+                        "justificacion",
+                        evaluacion_json.get("feedback", "")
+                    )
 
-                    if conceptos_cubiertos:
-                        st.markdown("### ✅ Conceptos correctamente abordados")
-                        for c in conceptos_cubiertos:
-                            st.markdown(f"- {c}")
-
-                    if conceptos_faltantes:
-                        st.markdown("### ⚠️ Conceptos no abordados o incompletos")
-                        for c in conceptos_faltantes:
-                            st.markdown(f"- {c}")
-
-                # ---------------------------------
-                # RESET CONTROLADO
-                # ---------------------------------
+                    conceptos_cubiertos = evaluacion_json.get("conceptos_cubiertos", [])
+                    conceptos_faltantes = evaluacion_json.get("conceptos_faltantes", [])
 
                 except Exception as e:
-                    st.error("No se pudo interpretar el resultado de evaluación.")
-                    st.write("Detalle técnico:", e)
+                    print("ERROR PARSE FRONT:", e)
+                    print("RESPUESTA CRUDA:", resultado)
+
+                    puntos = 0
+                    feedback = "Error al procesar respuesta del modelo"
+                    conceptos_cubiertos = []
+                    conceptos_faltantes = []
+
+                # --------------------------------
+                # 3️⃣ Guardar en DB (único punto)
+                # --------------------------------
+                save_technical_evaluation(
+                    st.session_state["user"]["id"],
+                    pregunta_eval,
+                    respuesta_usuario,
+                    respuesta_modelo,
+                    puntos,
+                    feedback
+                )
+
+                # --------------------------------
+                # 4️⃣ Registrar intento
+                # --------------------------------
+                st.session_state.preguntas_respondidas.add(pregunta_eval)
+
+                # --------------------------------
+                # 5️⃣ Mostrar resultado
+                # --------------------------------
+                if puntos == 2:
+                    st.success("Score: 2 – Respuesta correcta")
+                elif puntos == 1:
+                    st.warning("Score: 1 – Respuesta parcialmente correcta")
+                else:
+                    st.error("Score: 0 – Respuesta incorrecta")
+
+                st.markdown("**Retroalimentación técnica:**")
+                st.write(feedback)
+
+                if conceptos_cubiertos:
+                    st.markdown("### ✅ Conceptos correctamente abordados")
+                    for c in conceptos_cubiertos:
+                        st.markdown(f"- {c}")
+
+                if conceptos_faltantes:
+                    st.markdown("### ⚠️ Conceptos no abordados o incompletos")
+                    for c in conceptos_faltantes:
+                        st.markdown(f"- {c}")
 
  # -------------------------------
 # 📊 MÉTRICAS TÉCNICAS
