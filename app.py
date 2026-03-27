@@ -1,5 +1,7 @@
-import streamlit as st
+from dotenv import load_dotenv
+load_dotenv()
 import os
+import streamlit as st
 import random
 import json
 import re
@@ -237,15 +239,21 @@ def ensure_demo_user():
 
     return user_id
 
+def formatear_nombre(email):
+    return email.split("@")[0].replace(".", " ").title()
+
 def authenticate_user(email, password):
 
     # 🔥 MODO LOCAL SIN DB
     if not os.getenv("DATABASE_URL"):
-        return {
-            "id": "demo_local",
-            "email": email,
-            "role": "admin"
-        }
+        nombre = formatear_nombre(email)
+
+    return {
+        "id": "demo_local",
+        "email": email,
+        "nombre": nombre,
+        "role": "admin"
+    }
 
     # ===== MODO NORMAL (Railway) =====
     conn = get_db_connection()
@@ -257,7 +265,15 @@ def authenticate_user(email, password):
     conn.close()
 
     if user and verify_password(password, user["password_hash"]):
-        return user
+
+        nombre = formatear_nombre(email)
+
+        return {
+            "id": user["id"],
+            "email": email,
+            "nombre": nombre,
+            "role": "user"
+        }
 
     return None
 
@@ -1459,14 +1475,7 @@ with st.sidebar:
     st.write(f"🔑 Rol: {st.session_state['user']['role']}")
 
     if st.button("Cerrar sesión"):
-        st.session_state["user"] = None
-
-        if "pregunta_actual" in st.session_state:
-            del st.session_state.pregunta_actual
-
-        if "modo_anterior" in st.session_state:
-            del st.session_state.modo_anterior
-
+        st.session_state.clear()
         st.rerun()
 
 # --------------------------------------------------
@@ -1552,7 +1561,7 @@ if st.session_state.submitted:
     resultados = []
 
     for q in st.session_state.exam:
-
+                
         respuesta_usuario = st.session_state.answers.get(q["id"])
 
         if q["type"] == "mc":
@@ -1578,9 +1587,29 @@ if st.session_state.submitted:
                     q["model_answer"],
                     q.get("conceptos_clave", [])
                 )
+                
+                puntos = 0
+                
+                feedback = evaluacion
 
+                # Evitar duplicados por re-render de Streamlit
+                if (q.get("id"), respuesta_usuario) not in [
+                    (r[0].get("id"), r[1]) for r in resultados
+                ]:
+                    resultados.append((q, respuesta_usuario, feedback, True))
+                
                 try:
                     evaluacion_json = json.loads(evaluacion)
+
+                    st.session_state["cobertura"] = evaluacion_json.get("cobertura", 0)
+                    st.session_state["precision"] = evaluacion_json.get("precision", 0)
+                    st.session_state["terminos"] = evaluacion_json.get("terminos", 0)
+                    st.session_state["claridad"] = evaluacion_json.get("claridad", 0)
+                    st.session_state["comercial"] = evaluacion_json.get("comercial", 0)
+
+                except Exception as e:
+                    if DEBUG:
+                        print("ERROR PARSE METRICAS:", e)
 
                     score_total = evaluacion_json.get("score_total", 0)
 
@@ -1603,7 +1632,8 @@ if st.session_state.submitted:
                     )
 
                 except Exception as e:
-                    print("ERROR PARSE EVALUACION:", e)
+                    if DEBUG:
+                        print("ERROR PARSE EVALUACION:", str(e))
 
                     puntos = 0
                     feedback = "Error al procesar evaluación"
@@ -1673,7 +1703,7 @@ if st.session_state.submitted:
 
     col_logo, col_info = st.columns([1.2, 3])
 
-    nombre = st.session_state.get("usuario", "Usuario")
+    nombre = st.session_state.get("user", {}).get("nombre", "Usuario")
 
     with col_logo:
         st.image("assets/logo_zurich_santander_horizontal.png", use_container_width=True)
@@ -1749,6 +1779,11 @@ color:{color};">
 
     st.markdown(html_indice, unsafe_allow_html=True)
 
+    st.markdown(
+        f"<h4 style='text-align: center; color:{color}; margin-top:-10px'>{nivel}</h4>",
+        unsafe_allow_html=True
+    )
+
     st.progress(indice_global)
 
     st.divider()
@@ -1774,29 +1809,168 @@ color:{color};">
     # ===============================
 
     st.divider()
-    st.markdown("### Observaciones Técnicas")
 
-    for q, sel, cor, ok in resultados:
-        if isinstance(cor, str) and cor not in ["Sin respuesta"]:
+# =============================================
+# 📊 RADAR DE COMPETENCIAS (POST-EVALUACIÓN)
+# =============================================
 
-            with st.expander(q["question"]):
+if st.session_state.get("submitted"):
 
-                st.markdown(
-                    f"""
-                    <div style="background-color:#FFFFFF; padding:15px; border-radius:6px; border:1px solid #E5E7EB;">
-                        {cor}
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    st.markdown("### 📊 Perfil de Competencias Técnicas")
+
+    cobertura_val = st.session_state.get("cobertura", 0)
+    precision_val = st.session_state.get("precision", 0)
+    terminos_val = st.session_state.get("terminos", 0)
+    claridad_val = st.session_state.get("claridad", 0)
+    comercial_val = st.session_state.get("comercial", 0)
+
+    labels = ["Cobertura", "Precisión", "Términos", "Claridad", "Comercial"]
+    values = [cobertura_val, precision_val, terminos_val, claridad_val, comercial_val]
+
+    if sum(values) == 0:
+        st.info("Radar disponible al completar evaluación con métricas IA.")
+    else:
+        values += values[:1]
+        angles = np.linspace(0, 2*np.pi, len(labels), endpoint=False).tolist()
+        angles += angles[:1]
+
+        fig, ax = plt.subplots(subplot_kw=dict(polar=True))
+
+        ax.plot(angles, values)
+        ax.fill(angles, values, alpha=0.1)
+
+        ax.set_xticks(angles[:-1])
+        ax.set_xticklabels(labels)
+
+        ax.set_yticks([1, 2, 3, 4, 5])
+        ax.set_yticklabels(["1", "2", "3", "4", "5"])
+
+        ax.set_title("Evaluación por Competencias", pad=20)
+
+        st.pyplot(fig)
+
+    # =============================================
+    # 🧠 INTERPRETACIÓN EJECUTIVA
+    # =============================================
+
+    st.markdown("### 🧠 Interpretación Ejecutiva")
+
+    c = cobertura_val
+    p = precision_val
+    t = terminos_val
+    cl = claridad_val
+    co = comercial_val
+
+    fortalezas = []
+    debilidades = []
+
+    if c >= 4:
+        fortalezas.append("cobertura temática")
+    elif c <= 2:
+        debilidades.append("cobertura temática")
+
+    if p >= 4:
+        fortalezas.append("precisión conceptual")
+    elif p <= 2:
+        debilidades.append("precisión conceptual")
+
+    if t >= 4:
+        fortalezas.append("uso de terminología técnica")
+    elif t <= 2:
+        debilidades.append("uso de terminología técnica")
+
+    if cl >= 4:
+        fortalezas.append("claridad expositiva")
+    elif cl <= 2:
+        debilidades.append("claridad expositiva")
+
+    if co >= 4:
+        fortalezas.append("enfoque comercial")
+    elif co <= 2:
+        debilidades.append("enfoque comercial")
+
+    if fortalezas:
+        texto_fortalezas = ", ".join(fortalezas)
+    else:
+        texto_fortalezas = "desempeño general equilibrado"
+
+    if debilidades:
+        texto_debilidades = ", ".join(debilidades)
+        narrativa = f"El evaluado presenta fortalezas en {texto_fortalezas}, con oportunidades de mejora en {texto_debilidades}."
+    else:
+        narrativa = f"El evaluado presenta un desempeño sólido y consistente en todas las dimensiones evaluadas, destacando en {texto_fortalezas}."
+
+    st.info(narrativa)
+
+    # =============================================
+    # 📋 OBSERVACIONES TÉCNICAS
+    # =============================================
+
+if st.session_state.get("submitted") and modo == "Proceso de certificación":
+    
+    st.markdown("### 📋 Observaciones Técnicas")
+
+    resultados = st.session_state.get("resultados", [])
+    
+    # 🔒 Eliminar duplicados por id de pregunta
+    resultados_unicos = []
+    ids_vistos = set()
+
+    for r in resultados:
+        q = r[0]
+        q_id = q.get("id")
+
+        if q_id not in ids_vistos:
+            resultados_unicos.append(r)
+            ids_vistos.add(q_id)
+
+    resultados = resultados_unicos
+
+    if not resultados:
+        st.info("No hay observaciones disponibles.")
+    else:
+        for q, sel, cor, ok in resultados:
+
+            if sel or cor:
+
+                with st.expander(q["question"]):
+
+                    contenido_respuesta = sel if sel else "Sin respuesta"
+                    
+                    if cor:
+                        try:
+                            contenido_feedback = cor.encode().decode("unicode_escape")
+                        except Exception:
+                            contenido_feedback = cor
+                    else:
+                        contenido_feedback = "Sin evaluación disponible"
+
+                    st.markdown(
+                        f"""
+                        <div style="background-color:#FFFFFF; padding:15px; border-radius:10px; border:1px solid #E5E7EB;">
+                            <b>Respuesta del usuario:</b><br>{contenido_respuesta}<br><br>
+                            <b>Evaluación IA:</b><br>{contenido_feedback}
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+    # =============================================
+    # 🔄 RESET
+    # =============================================
 
     if st.button("Reiniciar certificación"):
         st.session_state.exam = None
         st.session_state.answers = {}
         st.session_state.submitted = False
+        st.session_state.resultados = []
         st.rerun()
 
     st.stop()
+
 # --------------------------------------------------
 # CHAT
 # --------------------------------------------------
@@ -1893,6 +2067,12 @@ if modo == "Evaluación técnica":
 
                 try:
                     evaluacion_json = json.loads(resultado)
+                    
+                    st.session_state["cobertura"] = evaluacion_json.get("cobertura", 0)
+                    st.session_state["precision"] = evaluacion_json.get("precision", 0)
+                    st.session_state["terminos"] = evaluacion_json.get("terminos", 0)
+                    st.session_state["claridad"] = evaluacion_json.get("claridad", 0)
+                    st.session_state["comercial"] = evaluacion_json.get("comercial", 0)
 
                     # -------------------------------
                     # SCORING NORMALIZADO
