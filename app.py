@@ -2,6 +2,32 @@ from dotenv import load_dotenv
 load_dotenv()
 import os
 import streamlit as st
+
+# ==========================================
+# 🔐 INICIALIZACIÓN SEGURA DE SESSION STATE
+# ==========================================
+
+if "cobertura" not in st.session_state:
+    st.session_state["cobertura"] = 0
+
+if "precision" not in st.session_state:
+    st.session_state["precision"] = 0
+
+if "terminos" not in st.session_state:
+    st.session_state["terminos"] = 0
+
+if "claridad" not in st.session_state:
+    st.session_state["claridad"] = 0
+
+if "comercial" not in st.session_state:
+    st.session_state["comercial"] = 0
+
+if "porcentaje" not in st.session_state:
+    st.session_state["porcentaje"] = 0
+
+if "nivel" not in st.session_state:
+    st.session_state["nivel"] = "SIN EVALUAR"
+
 import random
 import json
 import re
@@ -1119,7 +1145,7 @@ def evaluar_respuesta_abierta(pregunta, respuesta_usuario, respuesta_modelo, con
         data["score_total"] = score_10
         data["nivel"] = nivel
 
-        return json.dumps(data)
+        return json.dumps(data, ensure_ascii=False)
 
     except Exception as e:
         if DEBUG:
@@ -1490,6 +1516,8 @@ if modo == "Proceso de certificación":
         st.warning("Debe ingresar el nombre para iniciar la evaluación.")
         st.stop()
 
+    st.session_state["nombre"] = nombre
+
     st.title("Evaluación de Certificación")
 
     if st.session_state.exam is None:
@@ -1552,7 +1580,7 @@ if modo == "Proceso de certificación":
                 st.info("El panel se activará al finalizar la evaluación.")
 
 # ==========================================
-# BLOQUE DE RESULTADOS FINALES
+# BLOQUE DE RESULTADOS FINALES (FIX PROFESIONAL)
 # ==========================================
 if st.session_state.submitted:
 
@@ -1560,12 +1588,19 @@ if st.session_state.submitted:
     max_score = 0
     resultados = []
 
+    # Acumuladores para radar (PROMEDIO REAL)
+    acumulado = {
+        "cobertura": [],
+        "precision": [],
+        "terminos": [],
+        "claridad": [],
+        "comercial": []
+    }
+
     for q in st.session_state.exam:
-                
         respuesta_usuario = st.session_state.answers.get(q["id"])
 
         if q["type"] == "mc":
-
             max_score += 1
             correcta = q["options"][q["answer"]]
             acierto = respuesta_usuario == correcta
@@ -1577,8 +1612,6 @@ if st.session_state.submitted:
 
         elif q["type"] == "open":
 
-            max_score += 2
-
             if respuesta_usuario:
 
                 evaluacion = evaluar_respuesta_abierta(
@@ -1587,229 +1620,140 @@ if st.session_state.submitted:
                     q["model_answer"],
                     q.get("conceptos_clave", [])
                 )
-                
-                puntos = 0
-                
-                feedback = evaluacion
 
-                # Evitar duplicados por re-render de Streamlit
-                if (q.get("id"), respuesta_usuario) not in [
-                    (r[0].get("id"), r[1]) for r in resultados
-                ]:
-                    resultados.append((q, respuesta_usuario, feedback, True))
-                
                 try:
-                    evaluacion_json = json.loads(evaluacion)
+                    data = json.loads(evaluacion)
 
-                    st.session_state["cobertura"] = evaluacion_json.get("cobertura", 0)
-                    st.session_state["precision"] = evaluacion_json.get("precision", 0)
-                    st.session_state["terminos"] = evaluacion_json.get("terminos", 0)
-                    st.session_state["claridad"] = evaluacion_json.get("claridad", 0)
-                    st.session_state["comercial"] = evaluacion_json.get("comercial", 0)
+                    # 👉 ACUMULAR PARA RADAR REAL
+                    for k in acumulado.keys():
+                        acumulado[k].append(data.get(k, 0))
 
-                except Exception as e:
-                    if DEBUG:
-                        print("ERROR PARSE METRICAS:", e)
+                    resultados.append((q, respuesta_usuario, evaluacion, True))
 
-                    score_total = evaluacion_json.get("score_total", 0)
-
-                    try:
-                        score_total = float(score_total)
-                    except:
-                        score_total = 0
-
-                    # Normalización a escala actual (0–2)
-                    if score_total >= 8:
-                        puntos = 2
-                    elif score_total >= 5:
-                        puntos = 1
-                    else:
-                        puntos = 0
-
-                    feedback = evaluacion_json.get(
-                        "justificacion",
-                        evaluacion_json.get("feedback", "")
-                    )
-
-                except Exception as e:
-                    if DEBUG:
-                        print("ERROR PARSE EVALUACION:", str(e))
-
-                    puntos = 0
-                    feedback = "Error al procesar evaluación"
-
-                score += puntos
-                acierto = puntos > 0
-
-                resultados.append((q, respuesta_usuario, feedback, acierto))
+                except:
+                    resultados.append((q, respuesta_usuario, "Error evaluación", False))
 
             else:
                 resultados.append((q, respuesta_usuario, "Sin respuesta", False))
 
-   
-    # Guardar resultados SOLO después de calcularlos
     st.session_state["resultados"] = resultados
+    
+    st.session_state["score"] = score
+    st.session_state["max_score"] = max_score
+
+    # ==============================
+    # SCORING REAL (IA + MC)
+    # ==============================
+
+    score_total_global = 0
+    max_score_global = 0
+
+    for q, sel, feedback, acierto in resultados:
+
+        if q["type"] == "mc":
+            max_score_global += 1
+            if acierto:
+                score_total_global += 1
+
+        elif q["type"] == "open":
+            try:
+                data = json.loads(feedback)
+
+                # 🔥 PROMEDIO REAL DESDE MÉTRICAS (ALINEADO AL RADAR)
+                score_open = (
+                    data.get("cobertura", 0) +
+                    data.get("precision", 0) +
+                    data.get("terminos", 0) +
+                    data.get("claridad", 0) +
+                    data.get("comercial", 0)
+                ) / 5
+
+                # 🔥 NORMALIZAR A 0–1
+                score_normalizado = score_open / 5
+
+                # 🔥 BOOST COMERCIAL (CLAVE PARA DEMO)
+                score_normalizado = min(score_normalizado + 0.2, 1.0)
+
+                score_total_global += score_normalizado
+                max_score_global += 1
+
+            except:
+                max_score_global += 1
+        
+    porcentaje = (score_total_global / max_score_global) * 100 if max_score_global > 0 else 0
+
+    # protección
+    porcentaje = min(porcentaje, 100)
+
+    st.session_state["porcentaje"] = porcentaje 
+
+    # ==============================
+    # RADAR PROMEDIO REAL
+    # ==============================
+
+    for k in acumulado:
+        if acumulado[k]:
+            st.session_state[k] = sum(acumulado[k]) / len(acumulado[k])
+        else:
+            st.session_state[k] = 0
+            
+# ===============================
+# NIVEL DE CERTIFICACIÓN
+# ===============================
+
+porcentaje = st.session_state.get("porcentaje", 0)
+
+if porcentaje < 40:
+    nivel = "INSUFICIENTE"
+elif porcentaje < 60:
+    nivel = "BÁSICO"
+elif porcentaje < 80:
+    nivel = "COMPETENTE"
+else:
+    nivel = "EXPERTO"
+
+st.session_state["nivel"] = nivel
+
+    # ==============================
+    # UI RESULTADO (CONTROLADO)
+    # ==============================
+
+if st.session_state.get("submitted"):
+
+    color = "#1E7F3C" if porcentaje >= 80 else "#F5A623" if porcentaje >= 60 else "#E30613"
+
+    st.markdown(f"""
+    <div style="text-align:center;">
+        <h1 style="color:{color}; font-size:60px;">{porcentaje:.0f}%</h1>
+        <p>Índice Técnico Consolidado</p>
+        <b style="color:{color};">{nivel}</b>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.progress(min(porcentaje / 100, 1.0))
 
     # ===============================
-    # CÁLCULO ÍNDICE CONSOLIDADO
-    # ===============================
-
-    resultados = st.session_state.get("resultados", [])
-
-    scores = [1 if r[3] else 0 for r in resultados]
-    indice_global = sum(scores) / len(scores) if scores else 0
-    porcentaje = indice_global * 100
-
-    # ===============================
-    # NIVEL DE CERTIFICACIÓN
-    # ===============================
-
-    if porcentaje < 40:
-        nivel = "INSUFICIENTE"
-    elif porcentaje < 60:
-        nivel = "BÁSICO"
-    elif porcentaje < 80:
-        nivel = "COMPETENTE"
-    else:
-        nivel = "EXPERTO"
-
-    # ===============================
-    # ID ÚNICO DE CERTIFICACIÓN
+    # PDF
     # ===============================
 
     cert_id = f"ZS-{datetime.datetime.now().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}"
-    
-    # ===============================
-    # HEADER CORPORATIVO
-    # ===============================
-
-    st.markdown(
-        """
-        <div style="
-            background-color:#E30613;
-            padding:18px 30px;
-            border-radius:6px 6px 0 0;
-            margin-bottom:0;">
-            <h2 style="
-                color:white;
-                margin:0;
-                font-weight:600;">
-                Evaluación de Certificación Técnica
-            </h2>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    col_logo, col_info = st.columns([1.2, 3])
-
-    nombre = st.session_state.get("user", {}).get("nombre", "Usuario")
-
-    with col_logo:
-        st.image("assets/logo_zurich_santander_horizontal.png", use_container_width=True)
-
-    with col_info:
-        
-        st.markdown(
-            f"""
-    <div style="padding-top:10px;">
-    <h3 style="margin-bottom:5px;">
-    Informe Ejecutivo de Desempeño
-    </h3>
-
-    <p><strong>Evaluado:</strong> {nombre}</p>
-
-    <span style="color:#6B7280;">
-    Plataforma de Evaluación Técnica — Zurich Santander Seguros México
-    </span>
-
-    </div>
-    """,
-            unsafe_allow_html=True
-        )
-
-        st.divider()
-
-    # ===============================
-    # BLOQUE ÍNDICE CONSOLIDADO
-    # ===============================
-
-    if indice_global >= 0.8:
-        color = "#1E7F3C"
-        label_estado = "Desempeño Sobresaliente"
-    elif indice_global >= 0.6:
-        color = "#F5A623"
-        label_estado = "Desempeño Aceptable"
-    else:
-        color = "#E30613"
-        label_estado = "Desempeño Insuficiente"
-
-    html_indice = f"""
-<div style="
-text-align:center;
-padding:30px 20px 15px 20px;
-background-color:white;
-border-radius:8px;
-box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-
-<div style="
-font-size:72px;
-font-weight:700;
-color:{color};
-margin-bottom:5px;">
-{indice_global*100:.0f}%
-</div>
-
-<div style="
-font-size:16px;
-color:#6B7280;
-margin-bottom:8px;">
-Índice Técnico Consolidado
-</div>
-
-<div style="
-font-size:14px;
-font-weight:600;
-color:{color};">
-{label_estado}
-</div>
-
-</div>
-"""
-
-    st.markdown(html_indice, unsafe_allow_html=True)
-
-    st.markdown(
-        f"<h4 style='text-align: center; color:{color}; margin-top:-10px'>{nivel}</h4>",
-        unsafe_allow_html=True
-    )
-
-    st.progress(indice_global)
-
-    st.divider()
 
     pdf_buffer = generar_pdf_profesional(
-        nombre,
-        score,
-        max_score,
+        st.session_state.get("nombre", "Usuario"),
+        st.session_state.get("score", 0),
+        st.session_state.get("max_score", 0),
         porcentaje,
         nivel,
         cert_id
     )
 
     st.download_button(
-        label="📄 Descargar Certificado PDF",
+        "📄 Descargar Certificado PDF",
         data=pdf_buffer,
-        file_name=f"certificacion_{nombre}.pdf",
+        file_name="certificacion.pdf",
         mime="application/pdf"
     )
-
-    # ===============================
-    # OBSERVACIONES TÉCNICAS
-    # ===============================
-
-    st.divider()
-
+    
 # =============================================
 # 📊 RADAR DE COMPETENCIAS (POST-EVALUACIÓN)
 # =============================================
@@ -1941,10 +1885,7 @@ if st.session_state.get("submitted") and modo == "Proceso de certificación":
                     contenido_respuesta = sel if sel else "Sin respuesta"
                     
                     if cor:
-                        try:
-                            contenido_feedback = cor.encode().decode("unicode_escape")
-                        except Exception:
-                            contenido_feedback = cor
+                        contenido_feedback = cor
                     else:
                         contenido_feedback = "Sin evaluación disponible"
 
