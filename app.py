@@ -3,6 +3,12 @@ load_dotenv()
 import os
 import streamlit as st
 
+if "initialized" not in st.session_state:
+    st.session_state.initialized = True
+    st.session_state.pregunta_actual = {}
+    st.session_state.respuestas = []
+    st.session_state.resultado = None
+
 # ==========================================
 # 🔐 INICIALIZACIÓN SEGURA DE SESSION STATE
 # ==========================================
@@ -48,6 +54,7 @@ from reportlab.lib.pagesizes import letter
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import hashlib
+DEMO_MODE = True
 
 DEBUG = os.getenv("DEBUG_MODE", "false").lower() == "true"
 
@@ -137,6 +144,9 @@ st.markdown("---")
 
 def get_db_connection():
     database_url = os.getenv("DATABASE_URL")
+    
+    print("DATABASE_URL:", database_url)
+        
     if not database_url:
         raise Exception("DATABASE_URL no está configurada")
 
@@ -266,32 +276,41 @@ def ensure_demo_user():
     return user_id
 
 def formatear_nombre(email):
-    return email.split("@")[0].replace(".", " ").title()
+    if not email or "@" not in email:
+        return "Usuario"
 
+    return email.split("@")[0].replace(".", " ").title()
+    
 def authenticate_user(email, password):
 
-    # 🔥 MODO LOCAL SIN DB
-    if not os.getenv("DATABASE_URL"):
+    if DEMO_MODE:
         nombre = formatear_nombre(email)
 
-    return {
-        "id": "demo_local",
-        "email": email,
-        "nombre": nombre,
-        "role": "admin"
-    }
+        return {
+            "id": "demo_user",
+            "email": email,
+            "nombre": nombre,
+            "role": "user"
+        }
 
-    # ===== MODO NORMAL (Railway) =====
+    # ===== MODO REAL (Railway) =====
     conn = get_db_connection()
     cur = conn.cursor()
 
-    cur.execute("SELECT id, password_hash FROM users WHERE email = %s", (email,))
+    cur.execute(
+        "SELECT id, password_hash FROM users WHERE email = %s",
+        (email,)
+    )
     user = cur.fetchone()
 
     conn.close()
 
-    if user and verify_password(password, user["password_hash"]):
+    if not user:
+        return None
 
+    password_hash = user["password_hash"]
+
+    if verify_password(password, password_hash):
         nombre = formatear_nombre(email)
 
         return {
@@ -329,6 +348,11 @@ def save_conversation(user_id, question, response):
 
 def save_technical_evaluation(user_id, pregunta, respuesta_usuario, respuesta_modelo, score, feedback):
 
+    # 🔥 BLOQUE DE PROTECCIÓN DEMO
+    if DEMO_MODE:
+        return
+
+    # 🔒 Protección adicional por si no hay DB
     if not os.getenv("DATABASE_URL"):
         return
 
@@ -1930,18 +1954,53 @@ if modo == "Evaluación técnica":
     # ------------------------------------
 
     # Fijar pregunta en sesión para que no cambie en cada interacción
-    if "pregunta_actual" not in st.session_state:
+    if not st.session_state.get("pregunta_actual"):
+
         pregunta_db = get_random_active_question("nivel_1")
+        st.write("DEBUG pregunta_db:", pregunta_db)
 
         if pregunta_db:
-            st.session_state.pregunta_actual = pregunta_db
+
+            # 🔥 NORMALIZACIÓN ROBUSTA
+            if isinstance(pregunta_db, dict):
+
+                if "pregunta" in pregunta_db:
+                    st.session_state.pregunta_actual = pregunta_db
+
+                elif "contenido" in pregunta_db and isinstance(pregunta_db["contenido"], dict):
+
+                    contenido = pregunta_db["contenido"]
+
+                    if "pregunta" in contenido:
+                        st.session_state.pregunta_actual = {
+                            "pregunta": contenido["pregunta"]
+                        }
+                    else:
+                        st.session_state.pregunta_actual = {
+                            "pregunta": str(contenido)
+                        }
+
+                elif "texto" in pregunta_db:
+                    st.session_state.pregunta_actual = {
+                        "pregunta": pregunta_db["texto"]
+                    }
+
+                else:
+                    st.session_state.pregunta_actual = {
+                        "pregunta": str(pregunta_db)
+                    }
+
+            else:
+                st.session_state.pregunta_actual = {
+                    "pregunta": str(pregunta_db)
+                }
+
             st.session_state.respuesta_usuario = ""
-        else:
-            st.session_state.pregunta_actual = None
+    
+    if "pregunta_actual" in st.session_state:
 
-    if st.session_state.get("pregunta_actual"):
-
-        contenido = st.session_state.pregunta_actual["pregunta"]
+        pregunta_data = st.session_state.get("pregunta_actual", {})
+        contenido = pregunta_data.get("pregunta", "Cargando pregunta...")
         pregunta_eval = contenido
 
         st.markdown("### 📝 Pregunta asignada automáticamente:")
