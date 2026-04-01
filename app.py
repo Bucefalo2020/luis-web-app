@@ -54,9 +54,9 @@ from reportlab.lib.pagesizes import letter
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import hashlib
-DEMO_MODE = True
 
-DEBUG = os.getenv("DEBUG_MODE", "false").lower() == "true"
+DEBUG = False
+DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() == "true"
 
 st.set_page_config(
     page_title="Plataforma de Asistencia Inteligente",
@@ -66,8 +66,10 @@ st.set_page_config(
 
 st.title("Evaluación Técnica IA")
 
-if DEBUG:
-    print("APP INICIADA EN MODO DEBUG")
+# 🔬 DEBUG CONTROLADO (solo visible si DEBUG = True)
+if DEBUG and "pregunta_db" in locals():
+    with st.expander("DEBUG INFO"):
+        st.write(pregunta_db)
 
     if st.button("TEST OPENAI"):
         resultado_test = openai_generate("Di hola en una línea")
@@ -1569,6 +1571,10 @@ if modo == "Proceso de certificación":
                         q["options"],
                         key=f"q_{q['id']}"
                     )
+                    
+                    if respuesta is None:
+                        st.stop()
+                    
                     st.session_state.answers[q["id"]] = respuesta
 
                 elif q["type"] == "open":
@@ -1579,6 +1585,10 @@ if modo == "Proceso de certificación":
                     st.session_state.answers[q["id"]] = respuesta
 
             if st.button("Finalizar evaluación"):
+                if None in st.session_state.answers.values():
+                    st.warning("Responde todas las preguntas antes de finalizar")
+                    st.stop()
+                
                 st.session_state.submitted = True
 
     # ===============================
@@ -1957,7 +1967,7 @@ if modo == "Evaluación técnica":
     if not st.session_state.get("pregunta_actual"):
 
         pregunta_db = get_random_active_question("nivel_1")
-        st.write("DEBUG pregunta_db:", pregunta_db)
+        # st.write("DEBUG pregunta_db:", pregunta_db)
 
         if pregunta_db:
 
