@@ -55,6 +55,9 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import hashlib
 
+def verify_password(password, password_hash):
+    return hashlib.sha256(password.encode()).hexdigest() == password_hash
+
 DEBUG = False
 DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() == "true"
 
@@ -1086,11 +1089,17 @@ def evaluar_respuesta_abierta(pregunta, respuesta_usuario, respuesta_modelo, con
 
     Evalúa la respuesta del candidato en 5 dimensiones:
 
-    1. Cobertura conceptual (¿incluye los elementos clave?)
-    2. Precisión técnica (¿es correcta?)
-    3. Uso de términos contractuales
-    4. Claridad comunicativa
-    5. Orientación comercial
+    CRITERIOS OBLIGATORIOS:
+    - Penaliza respuestas incompletas
+    - Penaliza omisiones de conceptos clave
+    - Penaliza respuestas genéricas o superficiales
+    - NO sobreestimar la calidad
+    - SOLO asignar valores altos (2) si la respuesta es completa, precisa y bien estructurada
+
+    Usa los conceptos clave como referencia obligatoria:
+
+    Conceptos esperados:
+    {conceptos_clave}
 
     Devuelve SOLO un JSON así:
 
@@ -1108,6 +1117,10 @@ def evaluar_respuesta_abierta(pregunta, respuesta_usuario, respuesta_modelo, con
 
     Respuesta del candidato:
     {respuesta_usuario}
+    
+    Conceptos clave esperados:
+    {conceptos_clave}
+    
     """
 
     try:
@@ -1155,7 +1168,7 @@ def evaluar_respuesta_abierta(pregunta, respuesta_usuario, respuesta_modelo, con
             data.get("comercial", 0) * PESOS["comercial"]
         )
 
-        score_10 = round(score_final * 5, 2)
+        score_10 = round(score_final * 5, 1)
 
         # Clasificación
         if score_10 >= 8:
@@ -2009,16 +2022,19 @@ if modo == "Evaluación técnica":
     
     if "pregunta_actual" in st.session_state:
 
-        pregunta_data = st.session_state.get("pregunta_actual", {})
-        contenido = pregunta_data.get("pregunta", "Cargando pregunta...")
-        pregunta_eval = contenido
+        pregunta_data = st.session_state.get("pregunta_actual")
 
-        st.markdown("### 📝 Pregunta asignada automáticamente:")
-        st.info(pregunta_eval)
+        if isinstance(pregunta_data, dict) and "pregunta" in pregunta_data:
 
-    else:
-        st.error("No hay preguntas activas disponibles en la base de datos.")
-        pregunta_eval = ""
+            contenido = pregunta_data["pregunta"]
+            pregunta_eval = contenido
+
+            st.markdown("### 🧪 Pregunta asignada automáticamente:")
+            st.info(pregunta_eval)
+
+        else:
+            st.warning("Cargando pregunta...")
+            st.stop()
 
     respuesta_usuario = st.text_area(
         "Respuesta del evaluado:",
@@ -2094,9 +2110,13 @@ if modo == "Evaluación técnica":
                     except:
                         score_total = 0
 
-                    if score_total >= 8:
+                    # 🔥 NUEVO SCORE NORMALIZADO (0–100)
+                    score = int((score_total / 10) * 100)
+
+                    # 🔥 PUNTOS INTERNOS (compatibilidad con tu sistema)
+                    if score >= 80:
                         puntos = 2
-                    elif score_total >= 5:
+                    elif score >= 50:
                         puntos = 1
                     else:
                         puntos = 0
