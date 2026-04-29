@@ -1847,52 +1847,54 @@ if st.session_state.get("submitted"):
     # 🧠 INTERPRETACIÓN EJECUTIVA
     # =============================================
 
+def generar_narrativa_ejecutiva(score, c, p, t, cl, co):
+
+    # 1. Contexto general
+    if score >= 85:
+        nivel = "alto nivel de dominio técnico"
+        riesgo = "bajo"
+    elif score >= 70:
+        nivel = "desempeño adecuado con áreas de mejora"
+        riesgo = "moderado"
+    else:
+        nivel = "brechas técnicas relevantes"
+        riesgo = "elevado"
+
+    narrativa = f"El evaluado presenta un {nivel}, lo que sugiere un nivel de riesgo {riesgo} en la correcta asesoría al cliente. "
+
+    # 2. Implicaciones por dimensión
+    if c < 2:
+        narrativa += "Se observan oportunidades de mejora en cobertura conceptual, lo que puede derivar en interpretaciones incompletas de la póliza. "
+
+    if p < 2:
+        narrativa += "La precisión técnica presenta inconsistencias, incrementando el riesgo de errores en la recomendación de soluciones. "
+
+    if t < 2:
+        narrativa += "El uso limitado de terminología técnica afecta la credibilidad del discurso profesional frente al cliente. "
+
+    if cl < 2:
+        narrativa += "La claridad comunicativa puede dificultar la comprensión del cliente y afectar la toma de decisiones informadas. "
+
+    if co < 2:
+        narrativa += "El enfoque comercial no está plenamente integrado, lo que puede impactar la conversión y la calidad de la asesoría. "
+
+    # 3. Recomendación ejecutiva
+    narrativa += "Se recomienda implementar un plan de fortalecimiento enfocado en la integración entre conocimiento técnico y aplicación comercial, priorizando escenarios reales de asesoría."
+
+    return narrativa
+
+if st.session_state.get("submitted") or st.session_state.get("resultado"):
+    
     st.markdown("### 🧠 Interpretación Ejecutiva")
 
-    c = cobertura_val
-    p = precision_val
-    t = terminos_val
-    cl = claridad_val
-    co = comercial_val
-
-    fortalezas = []
-    debilidades = []
-
-    if c >= 4:
-        fortalezas.append("cobertura temática")
-    elif c <= 2:
-        debilidades.append("cobertura temática")
-
-    if p >= 4:
-        fortalezas.append("precisión conceptual")
-    elif p <= 2:
-        debilidades.append("precisión conceptual")
-
-    if t >= 4:
-        fortalezas.append("uso de terminología técnica")
-    elif t <= 2:
-        debilidades.append("uso de terminología técnica")
-
-    if cl >= 4:
-        fortalezas.append("claridad expositiva")
-    elif cl <= 2:
-        debilidades.append("claridad expositiva")
-
-    if co >= 4:
-        fortalezas.append("enfoque comercial")
-    elif co <= 2:
-        debilidades.append("enfoque comercial")
-
-    if fortalezas:
-        texto_fortalezas = ", ".join(fortalezas)
-    else:
-        texto_fortalezas = "desempeño general equilibrado"
-
-    if debilidades:
-        texto_debilidades = ", ".join(debilidades)
-        narrativa = f"El evaluado presenta fortalezas en {texto_fortalezas}, con oportunidades de mejora en {texto_debilidades}."
-    else:
-        narrativa = f"El evaluado presenta un desempeño sólido y consistente en todas las dimensiones evaluadas, destacando en {texto_fortalezas}."
+    narrativa = generar_narrativa_ejecutiva(
+        porcentaje,          # o score equivalente
+        cobertura_val,
+        precision_val,
+        terminos_val,
+        claridad_val,
+        comercial_val
+    )
 
     st.info(narrativa)
 
