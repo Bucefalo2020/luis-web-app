@@ -41,7 +41,6 @@ import datetime
 import uuid
 import requests
 from pypdf import PdfReader
-from google import genai
 from zoneinfo import ZoneInfo
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
@@ -427,16 +426,7 @@ def get_metrics():
 # CONFIGURACIÓN API
 # --------------------------------------------------
 
-API_KEY = os.getenv("GEMINI_API_KEY")
 
-if not API_KEY:
-    st.error("GEMINI_API_KEY no está definida en el entorno.")
-    st.stop()
-
-client = genai.Client(
-    api_key=API_KEY,
-    http_options={"api_version": "v1"}
-)
 
 # --------------------------------------------------
 # CARGA DOCUMENTO PDF
