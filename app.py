@@ -1089,14 +1089,13 @@ def evaluar_respuesta_abierta(pregunta, respuesta_usuario, respuesta_modelo, con
 
     Evalúa la respuesta del candidato en 5 dimensiones:
 
-    CRITERIOS OBLIGATORIOS:
-    - Penaliza respuestas incompletas
-    - Penaliza omisiones de conceptos clave
-    - Penaliza respuestas genéricas o superficiales
-    - NO sobreestimar la calidad
-    - SOLO asignar valores altos (2) si la respuesta es completa, precisa y bien estructurada
-
-    Usa los conceptos clave como referencia obligatoria:
+    CRITERIOS DE EVALUACIÓN (balanceados):
+    - Considera correcta una respuesta si cubre los elementos clave, aunque no sea exhaustiva
+    - Penaliza omisiones críticas, pero no penalices la falta de profundidad avanzada
+    - Valora claridad y coherencia como evidencia de comprensión
+    - Evita sobrecastigar respuestas correctas pero concisas
+    - Asigna puntajes altos (2) cuando la respuesta es correcta, clara y suficientemente completa
+    - Reserva la penalización fuerte solo para errores conceptuales o respuestas fuera de contexto
 
     Conceptos esperados:
     {conceptos_clave}
@@ -1153,13 +1152,13 @@ def evaluar_respuesta_abierta(pregunta, respuesta_usuario, respuesta_modelo, con
         # -------------------------------
 
         PESOS = {
-            "cobertura": 0.30,
+            "cobertura": 0.25,
             "precision": 0.25,
-            "terminos": 0.20,
-            "claridad": 0.15,
-            "comercial": 0.10
+            "terminos": 0.15,
+            "claridad": 0.20,
+            "comercial": 0.15
         }
-
+        
         score_final = (
             data.get("cobertura", 0) * PESOS["cobertura"] +
             data.get("precision", 0) * PESOS["precision"] +
@@ -1168,14 +1167,15 @@ def evaluar_respuesta_abierta(pregunta, respuesta_usuario, respuesta_modelo, con
             data.get("comercial", 0) * PESOS["comercial"]
         )
 
-        score_10 = round(score_final * 5, 1)
+        score_10 = round(score_final * 5 * 1.1, 1)
+        score_10 = min(score_10, 10)
 
         # Clasificación
-        if score_10 >= 8:
+        if score_10 >= 9:
             nivel = "Excelente"
-        elif score_10 >= 6:
+        elif score_10 >= 7:
             nivel = "Competente"
-        elif score_10 >= 4:
+        elif score_10 >= 5:
             nivel = "Básico"
         else:
             nivel = "Deficiente"
