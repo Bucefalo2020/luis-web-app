@@ -956,6 +956,100 @@ def get_technical_metrics():
 
     return result
 
+# =========================================
+# DASHBOARD EJECUTIVO EQUIPO
+# =========================================
+
+def get_team_dashboard():
+
+    if not os.getenv("DATABASE_URL"):
+        return []
+
+    conn = get_db_connection()
+
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    cur.execute("""
+        SELECT
+            user_id,
+
+            ROUND(AVG(score)::numeric, 2) AS avg_score,
+            COUNT(*) AS evaluaciones,
+
+            ROUND(AVG(cobertura)::numeric, 2) AS cobertura,
+            ROUND(AVG(precision)::numeric, 2) AS precision,
+            ROUND(AVG(terminos)::numeric, 2) AS terminos,
+            ROUND(AVG(claridad)::numeric, 2) AS claridad,
+            ROUND(AVG(comercial)::numeric, 2) AS comercial
+
+        FROM technical_evaluations
+
+        GROUP BY user_id
+
+        ORDER BY avg_score DESC
+    """)
+
+    rows = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return rows
+
+
+def procesar_dashboard_equipo(rows):
+
+    if not rows:
+        return None
+
+    total = len(rows)
+
+    scores = [
+        r["avg_score"]
+        for r in rows
+        if r["avg_score"] is not None
+    ]
+
+    promedio_equipo = round(sum(scores) / len(scores), 2)
+
+    niveles = {
+        "Experto": 0,
+        "Competente": 0,
+        "Básico": 0,
+        "Deficiente": 0
+    }
+
+    for r in rows:
+
+        s = r["avg_score"] or 0
+
+        if s >= 8:
+            niveles["Experto"] += 1
+
+        elif s >= 6:
+            niveles["Competente"] += 1
+
+        elif s >= 4:
+            niveles["Básico"] += 1
+
+        else:
+            niveles["Deficiente"] += 1
+
+    radar = {
+        "Cobertura": round(sum(r["cobertura"] or 0 for r in rows) / total, 2),
+        "Precisión": round(sum(r["precision"] or 0 for r in rows) / total, 2),
+        "Términos": round(sum(r["terminos"] or 0 for r in rows) / total, 2),
+        "Claridad": round(sum(r["claridad"] or 0 for r in rows) / total, 2),
+        "Comercial": round(sum(r["comercial"] or 0 for r in rows) / total, 2),
+    }
+
+    return {
+        "promedio_equipo": promedio_equipo,
+        "niveles": niveles,
+        "radar": radar,
+        "total": total
+    }
+
 # --------------------------------------------------
 # FUNCIONES IA
 # --------------------------------------------------
@@ -1706,7 +1800,7 @@ if st.session_state.submitted:
                 ) / 5
 
                 # 🔥 NORMALIZAR A 0–1
-                score_normalizado = score_open / 5
+                score_normalizado = score_open / 2
 
                 # 🔥 BOOST COMERCIAL (CLAVE PARA DEMO)
                 score_normalizado = min(score_normalizado + 0.2, 1.0)
@@ -1717,7 +1811,7 @@ if st.session_state.submitted:
             except:
                 max_score_global += 1
         
-    porcentaje = (score_total_global / max_score_global) * 100 if max_score_global > 0 else 0
+    porcentaje = round((score_total_global / max_score_global) * 100, 1) if max_score_global > 0 else 0
 
     # protección
     porcentaje = min(porcentaje, 100)
@@ -1826,8 +1920,10 @@ if st.session_state.get("submitted"):
         ax.set_xticks(angles[:-1])
         ax.set_xticklabels(labels)
 
-        ax.set_yticks([1, 2, 3, 4, 5])
-        ax.set_yticklabels(["1", "2", "3", "4", "5"])
+        ax.set_ylim(0, 2)
+
+        ax.set_yticks([0.5, 1, 1.5, 2])
+        ax.set_yticklabels(["0.5", "1", "1.5", "2"])
 
         ax.set_title("Evaluación por Competencias", pad=20)
 
@@ -1853,19 +1949,19 @@ def generar_narrativa_ejecutiva(score, c, p, t, cl, co):
     narrativa = f"El evaluado presenta un {nivel}, lo que sugiere un nivel de riesgo {riesgo} en la correcta asesoría al cliente. "
 
     # 2. Implicaciones por dimensión
-    if c < 2:
+    if c <= 0.5:
         narrativa += "Se observan oportunidades de mejora en cobertura conceptual, lo que puede derivar en interpretaciones incompletas de la póliza. "
 
-    if p < 2:
+    if p <= 0.5:
         narrativa += "La precisión técnica presenta inconsistencias, incrementando el riesgo de errores en la recomendación de soluciones. "
 
-    if t < 2:
+    if t <= 0.5:
         narrativa += "El uso limitado de terminología técnica afecta la credibilidad del discurso profesional frente al cliente. "
 
-    if cl < 2:
+    if cl <= 0.5:
         narrativa += "La claridad comunicativa puede dificultar la comprensión del cliente y afectar la toma de decisiones informadas. "
 
-    if co < 2:
+    if co <= 0.5:
         narrativa += "El enfoque comercial no está plenamente integrado, lo que puede impactar la conversión y la calidad de la asesoría. "
 
     # 3. Recomendación ejecutiva
