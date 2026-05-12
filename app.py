@@ -57,10 +57,12 @@ from psycopg2.extras import RealDictCursor
 import hashlib
 
 def verify_password(password, password_hash):
-    return hashlib.sha256(password.encode()).hexdigest() == password_hash
+    return hashlib.sha256(password.encode()).hexdigest().strip() == password_hash.strip()
 
 DEBUG = False
 DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() == "true"
+
+DEMO_MODE = False
 
 st.set_page_config(
     page_title="Plataforma de Asistencia Inteligente",
@@ -250,7 +252,9 @@ if os.getenv("DATABASE_URL"):
         st.session_state["db_initialized"] = True
 
 def hash_password(password):
-    return hashlib.sha256(password.encode()).hexdigest()
+    resultado = hashlib.sha256(password.encode()).hexdigest()
+    st.write("HASH GENERADO:", resultado)
+    return resultado
 
 def ensure_demo_user():
     conn = get_db_connection()
@@ -308,6 +312,8 @@ def authenticate_user(email, password):
         (email,)
     )
     user = cur.fetchone()
+    
+    st.write("DEBUG USER:", user)
 
     conn.close()
 
@@ -315,8 +321,13 @@ def authenticate_user(email, password):
         return None
 
     password_hash = user["password_hash"]
+    
+    st.write("DEBUG HASH DB:", password_hash)
+    st.write("DEBUG HASH INPUT:", hashlib.sha256(password.encode()).hexdigest())
+    st.write("VERIFY RESULT:", verify_password(password, password_hash))
 
     if verify_password(password, password_hash):
+        st.write("LOGIN SUCCESS")
         nombre = formatear_nombre(email)
 
         return {
