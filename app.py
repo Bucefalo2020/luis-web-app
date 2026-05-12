@@ -36,6 +36,8 @@ if "nivel" not in st.session_state:
 
 import random
 import json
+import numpy as np
+import matplotlib.pyplot as plt
 import re
 import datetime
 import uuid
@@ -350,7 +352,15 @@ def save_conversation(user_id, question, response):
     cur.close()
     conn.close()
 
-def save_technical_evaluation(user_id, pregunta, respuesta_usuario, respuesta_modelo, score, feedback):
+def save_technical_evaluation(
+    user_id,
+    pregunta,
+    respuesta_usuario,
+    respuesta_modelo,
+    score,
+    feedback,
+    metricas_json=None
+):
 
     # 🔥 BLOQUE DE PROTECCIÓN DEMO
     if DEMO_MODE:
@@ -365,9 +375,25 @@ def save_technical_evaluation(user_id, pregunta, respuesta_usuario, respuesta_mo
 
     cur.execute("""
         INSERT INTO technical_evaluations
-        (user_id, pregunta, respuesta_usuario, respuesta_modelo, score, feedback)
+        (
+            user_id,
+            pregunta,
+            respuesta_usuario,
+            respuesta_modelo,
+            score,
+            feedback
+        )
         VALUES (%s, %s, %s, %s, %s, %s);
-    """, (user_id, pregunta, respuesta_usuario, respuesta_modelo, score, feedback))
+    """, (
+            user_id,
+            pregunta,
+            respuesta_usuario,
+            respuesta_modelo,
+            score,
+            json.dumps(metricas_json if metricas_json else {
+                "feedback": feedback
+            }, ensure_ascii=False)
+        ))
 
     conn.commit()
     cur.close()
@@ -972,21 +998,9 @@ def get_team_dashboard():
     cur.execute("""
         SELECT
             user_id,
-
-            ROUND(AVG(score)::numeric, 2) AS avg_score,
-            COUNT(*) AS evaluaciones,
-
-            ROUND(AVG(cobertura)::numeric, 2) AS cobertura,
-            ROUND(AVG(precision)::numeric, 2) AS precision,
-            ROUND(AVG(terminos)::numeric, 2) AS terminos,
-            ROUND(AVG(claridad)::numeric, 2) AS claridad,
-            ROUND(AVG(comercial)::numeric, 2) AS comercial
-
+            score,
+            feedback
         FROM technical_evaluations
-
-        GROUP BY user_id
-
-        ORDER BY avg_score DESC
     """)
 
     rows = cur.fetchall()
@@ -994,8 +1008,28 @@ def get_team_dashboard():
     cur.close()
     conn.close()
 
-    return rows
+    resultado = []
 
+    for r in rows:
+
+        try:
+
+            feedback_json = json.loads(r["feedback"])
+
+            resultado.append({
+                "user_id": r["user_id"],
+                "avg_score": r["score"],
+                "cobertura": feedback_json.get("cobertura", 0),
+                "precision": feedback_json.get("precision", 0),
+                "terminos": feedback_json.get("terminos", 0),
+                "claridad": feedback_json.get("claridad", 0),
+                "comercial": feedback_json.get("comercial", 0),
+            })
+
+        except:
+            pass
+
+    return resultado
 
 def procesar_dashboard_equipo(rows):
 
@@ -2235,7 +2269,8 @@ if modo == "Evaluación técnica":
                     respuesta_usuario,
                     respuesta_modelo,
                     puntos,
-                    feedback
+                    feedback,
+                    metricas_json=evaluacion_json
                 )
 
                 # --------------------------------
@@ -2293,6 +2328,96 @@ if metricas_eval and metricas_eval["total"] > 0:
 else:
     st.info("Aún no existen evaluaciones registradas.")
 
+# ==================================================
+# 🏢 DASHBOARD EJECUTIVO DE EQUIPO
+# ==================================================
+
+st.markdown("---")
+st.markdown("## 🏢 Dashboard Ejecutivo de Equipo")
+
+team_rows = get_team_dashboard()
+
+if team_rows:
+
+    dashboard = procesar_dashboard_equipo(team_rows)
+
+    promedio_equipo = dashboard["promedio_equipo"]
+    niveles = dashboard["niveles"]
+    radar = dashboard["radar"]
+    total_equipo = dashboard["total"]
+
+    # ==================================================
+    # 📌 KPIs EJECUTIVOS
+    # ==================================================
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    col1.metric("Promedio equipo", f"{promedio_equipo}/10")
+    col2.metric("Evaluaciones", total_equipo)
+    col3.metric("Expertos", niveles["Experto"])
+    col4.metric("Competentes", niveles["Competente"])
+
+    # ==================================================
+    # 📈 RADAR ORGANIZACIONAL
+    # ==================================================
+
+    st.markdown("### 📈 Perfil Promedio Organizacional")
+
+    labels = list(radar.keys())
+    values = list(radar.values())
+
+    values += values[:1]
+
+    angles = np.linspace(0, 2*np.pi, len(labels), endpoint=False).tolist()
+    angles += angles[:1]
+
+    fig, ax = plt.subplots(subplot_kw=dict(polar=True))
+
+    ax.plot(angles, values)
+    ax.fill(angles, values, alpha=0.1)
+
+    ax.set_xticks(angles[:-1])
+    ax.set_xticklabels(labels)
+
+    ax.set_ylim(0, 2)
+
+    ax.set_yticks([0.5, 1, 1.5, 2])
+    ax.set_yticklabels(["0.5", "1", "1.5", "2"])
+
+    ax.set_title("Competencias promedio del equipo", pad=20)
+
+    st.pyplot(fig)
+
+    # ==================================================
+    # 🧠 INTERPRETACIÓN CORPORATIVA
+    # ==================================================
+
+    fortalezas = []
+    riesgos = []
+
+    for k, v in radar.items():
+
+        if v >= 1.5:
+            fortalezas.append(k)
+
+        elif v <= 0.8:
+            riesgos.append(k)
+
+    texto_f = ", ".join(fortalezas) if fortalezas else "desempeño general"
+    texto_r = ", ".join(riesgos) if riesgos else "sin brechas críticas"
+
+    narrativa_equipo = f"""
+El equipo presenta fortalezas consolidadas en {texto_f}. 
+Se identifican oportunidades de mejora en {texto_r}, 
+por lo que se recomienda reforzar escenarios aplicados y alineación técnico-comercial 
+para elevar la consistencia operativa y la calidad de asesoría al cliente.
+"""
+
+    st.info(narrativa_equipo)
+
+else:
+
+    st.info("No hay datos suficientes para construir dashboard ejecutivo.")
 
 # --------------------------------
 # ➡️ BOTÓN NUEVA PREGUNTA
