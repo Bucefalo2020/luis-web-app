@@ -253,7 +253,6 @@ if os.getenv("DATABASE_URL"):
 
 def hash_password(password):
     resultado = hashlib.sha256(password.encode()).hexdigest()
-    st.write("HASH GENERADO:", resultado)
     return resultado
 
 def ensure_demo_user():
@@ -297,10 +296,10 @@ def authenticate_user(email, password):
         nombre = formatear_nombre(email)
 
         return {
-            "id": "demo_user",
+            "id": user["id"],
             "email": email,
             "nombre": nombre,
-            "role": "user"
+            "role": user["role"]
         }
 
     # ===== MODO REAL (Railway) =====
@@ -308,12 +307,14 @@ def authenticate_user(email, password):
     cur = conn.cursor()
 
     cur.execute(
-        "SELECT id, password_hash FROM users WHERE email = %s",
+        """
+        SELECT id, role, password_hash
+        FROM users
+        WHERE email = %s
+        """,
         (email,)
     )
     user = cur.fetchone()
-    
-    st.write("DEBUG USER:", user)
 
     conn.close()
 
@@ -321,20 +322,16 @@ def authenticate_user(email, password):
         return None
 
     password_hash = user["password_hash"]
-    
-    st.write("DEBUG HASH DB:", password_hash)
-    st.write("DEBUG HASH INPUT:", hashlib.sha256(password.encode()).hexdigest())
-    st.write("VERIFY RESULT:", verify_password(password, password_hash))
 
     if verify_password(password, password_hash):
-        st.write("LOGIN SUCCESS")
+        
         nombre = formatear_nombre(email)
-
+        
         return {
             "id": user["id"],
             "email": email,
             "nombre": nombre,
-            "role": "user"
+            "role": user["role"]
         }
 
     return None
