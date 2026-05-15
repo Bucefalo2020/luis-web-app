@@ -994,7 +994,7 @@ def get_technical_metrics():
 # DASHBOARD EJECUTIVO EQUIPO
 # =========================================
 
-def get_team_dashboard():
+def get_team_dashboard(role, user_id):
 
     if not os.getenv("DATABASE_URL"):
         return []
@@ -1003,13 +1003,26 @@ def get_team_dashboard():
 
     cur = conn.cursor(cursor_factory=RealDictCursor)
 
-    cur.execute("""
-        SELECT
-            user_id,
-            score,
-            feedback
-        FROM technical_evaluations
-    """)
+    if role in ["admin", "supervisor"]:
+
+        cur.execute("""
+            SELECT
+                user_id,
+                score,
+                feedback
+            FROM technical_evaluations
+        """)
+
+    else:
+
+        cur.execute("""
+            SELECT
+                user_id,
+                score,
+                feedback
+            FROM technical_evaluations
+            WHERE user_id = %s
+        """, (user_id,))
 
     rows = cur.fetchall()
 
@@ -2343,7 +2356,10 @@ else:
 st.markdown("---")
 st.markdown("## 🏢 Dashboard Ejecutivo de Equipo")
 
-team_rows = get_team_dashboard()
+team_rows = get_team_dashboard(
+    st.session_state["user"]["role"],
+    st.session_state["user"]["id"]
+)
 
 if team_rows:
 
@@ -2354,9 +2370,9 @@ if team_rows:
     radar = dashboard["radar"]
     total_equipo = dashboard["total"]
 
-    # ==================================================
+    # =====================================================
     # 📌 KPIs EJECUTIVOS
-    # ==================================================
+    # =====================================================
 
     col1, col2, col3, col4 = st.columns(4)
 
@@ -2365,11 +2381,21 @@ if team_rows:
     col3.metric("Expertos", niveles["Experto"])
     col4.metric("Competentes", niveles["Competente"])
 
-    # ==================================================
+    # =====================================================
     # 📈 RADAR ORGANIZACIONAL
-    # ==================================================
+    # =====================================================
 
-    st.markdown("### 📈 Perfil Promedio Organizacional")
+    role = st.session_state["user"]["role"]
+
+    if role == "user":
+        dashboard_title = "### 👤 Mi Perfil de Competencias"
+        radar_title = "Mis competencias técnicas"
+
+    else:
+        dashboard_title = "### 📈 Perfil Promedio Organizacional"
+        radar_title = "Competencias promedio del equipo"
+
+    st.markdown(dashboard_title)
 
     labels = list(radar.keys())
     values = list(radar.values())
@@ -2392,13 +2418,13 @@ if team_rows:
     ax.set_yticks([0.5, 1, 1.5, 2])
     ax.set_yticklabels(["0.5", "1", "1.5", "2"])
 
-    ax.set_title("Competencias promedio del equipo", pad=20)
+    ax.set_title(radar_title, pad=20)
 
     st.pyplot(fig)
 
-    # ==================================================
+    # =====================================================
     # 🧠 INTERPRETACIÓN CORPORATIVA
-    # ==================================================
+    # =====================================================
 
     fortalezas = []
     riesgos = []
@@ -2415,9 +2441,9 @@ if team_rows:
     texto_r = ", ".join(riesgos) if riesgos else "sin brechas críticas"
 
     narrativa_equipo = f"""
-El equipo presenta fortalezas consolidadas en {texto_f}. 
-Se identifican oportunidades de mejora en {texto_r}, 
-por lo que se recomienda reforzar escenarios aplicados y alineación técnico-comercial 
+El equipo presenta fortalezas consolidadas en {texto_f}.
+Se identifican oportunidades de mejora en {texto_r},
+por lo que se recomienda reforzar escenarios aplicados y alineación técnico-comercial
 para elevar la consistencia operativa y la calidad de asesoría al cliente.
 """
 
