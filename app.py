@@ -2354,7 +2354,15 @@ else:
 # ==================================================
 
 st.markdown("---")
-st.markdown("## 🏢 Dashboard Ejecutivo de Equipo")
+role = st.session_state["user"]["role"]
+
+if role == "user":
+    dashboard_header = "## 👤 Mi Dashboard de Desempeño"
+
+else:
+    dashboard_header = "## 🏢 Dashboard Ejecutivo de Equipo"
+
+st.markdown(dashboard_header)
 
 team_rows = get_team_dashboard(
     st.session_state["user"]["role"],
@@ -2440,12 +2448,25 @@ if team_rows:
     texto_f = ", ".join(fortalezas) if fortalezas else "desempeño general"
     texto_r = ", ".join(riesgos) if riesgos else "sin brechas críticas"
 
-    narrativa_equipo = f"""
-El equipo presenta fortalezas consolidadas en {texto_f}.
-Se identifican oportunidades de mejora en {texto_r},
-por lo que se recomienda reforzar escenarios aplicados y alineación técnico-comercial
-para elevar la consistencia operativa y la calidad de asesoría al cliente.
-"""
+    role = st.session_state["user"]["role"]
+
+    if role == "user":
+
+        narrativa_equipo = f"""
+    Tu desempeño presenta fortalezas en {texto_f}.
+    Se identifican oportunidades de mejora en {texto_r}.
+
+    Se recomienda reforzar escenarios prácticos y profundizar capacidades técnico-comerciales para elevar consistencia y efectividad en futuras interacciones.
+    """
+
+    else:
+
+        narrativa_equipo = f"""
+    El equipo presenta fortalezas consolidadas en {texto_f}.
+    Se identifican oportunidades de mejora en {texto_r}.
+
+    Se recomienda reforzar escenarios aplicados y alineación técnico-comercial para elevar la consistencia operativa y la calidad de asesoría al cliente.
+    """
 
     st.info(narrativa_equipo)
 
