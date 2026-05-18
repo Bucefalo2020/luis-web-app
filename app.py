@@ -2382,12 +2382,35 @@ if team_rows:
     # 📌 KPIs EJECUTIVOS
     # =====================================================
 
+    role = st.session_state["user"]["role"]
+
     col1, col2, col3, col4 = st.columns(4)
 
-    col1.metric("Promedio equipo", f"{promedio_equipo}/10")
-    col2.metric("Evaluaciones", total_equipo)
-    col3.metric("Expertos", niveles["Experto"])
-    col4.metric("Competentes", niveles["Competente"])
+    if role == "user":
+
+        # determinar nivel individual
+        if promedio_equipo >= 8:
+            nivel_usuario = "Experto"
+
+        elif promedio_equipo >= 6:
+            nivel_usuario = "Competente"
+
+        else:
+            nivel_usuario = "En desarrollo"
+
+        progreso = f"{round((promedio_equipo/10)*100)}%"
+
+        col1.metric("Mi Score", f"{promedio_equipo}/10")
+        col2.metric("Mis Evaluaciones", total_equipo)
+        col3.metric("Mi Nivel", nivel_usuario)
+        col4.metric("Mi Progreso", progreso)
+
+    else:
+
+        col1.metric("Promedio equipo", f"{promedio_equipo}/10")
+        col2.metric("Evaluaciones", total_equipo)
+        col3.metric("Expertos", niveles["Experto"])
+        col4.metric("Competentes", niveles["Competente"])
 
     # =====================================================
     # 📈 RADAR ORGANIZACIONAL
