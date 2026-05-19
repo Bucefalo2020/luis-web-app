@@ -152,8 +152,6 @@ st.markdown("---")
 
 def get_db_connection():
     database_url = os.getenv("DATABASE_URL")
-    
-    print("DATABASE_URL:", database_url)
         
     if not database_url:
         raise Exception("DATABASE_URL no está configurada")
@@ -1065,7 +1063,13 @@ def procesar_dashboard_equipo(rows):
         if r["avg_score"] is not None
     ]
 
-    promedio_equipo = round(sum(scores) / len(scores), 2)
+    if scores:
+        promedio_equipo = round(
+            sum(scores) / len(scores),
+            2
+        )
+    else:
+        promedio_equipo = 0
 
     niveles = {
         "Experto": 0,
@@ -2369,14 +2373,57 @@ team_rows = get_team_dashboard(
     st.session_state["user"]["id"]
 )
 
-if team_rows:
+if not team_rows:
 
-    dashboard = procesar_dashboard_equipo(team_rows)
+    st.info(
+        "No hay datos suficientes para construir dashboard ejecutivo."
+    )
+
+else:
+
+    if role == "supervisor":
+
+        my_rows = get_team_dashboard(
+            "user",
+            st.session_state["user"]["id"]
+        )
+
+        my_dashboard = procesar_dashboard_equipo(my_rows)
+
+        mi_score = my_dashboard["promedio_equipo"]
+
+    dashboard = procesar_dashboard_equipo(team_rows)   
 
     promedio_equipo = dashboard["promedio_equipo"]
     niveles = dashboard["niveles"]
     radar = dashboard["radar"]
     total_equipo = dashboard["total"]
+    
+    if role == "supervisor":
+
+        diferencia = round(
+            mi_score - promedio_equipo,
+            1
+        )
+
+        st.markdown("### 👤 Mi desempeño supervisor")
+
+        c1, c2, c3 = st.columns(3)
+
+        c1.metric(
+            "Mi Score",
+            f"{mi_score}/10"
+        )
+
+        c2.metric(
+            "Promedio equipo",
+            f"{promedio_equipo}/10"
+        )
+
+        c3.metric(
+            "Diferencia",
+            f"{diferencia:+}"
+        ) 
 
     # =====================================================
     # 📌 KPIs EJECUTIVOS
@@ -2388,7 +2435,6 @@ if team_rows:
 
     if role == "user":
 
-        # determinar nivel individual
         if promedio_equipo >= 8:
             nivel_usuario = "Experto"
 
@@ -2405,7 +2451,14 @@ if team_rows:
         col3.metric("Mi Nivel", nivel_usuario)
         col4.metric("Mi Progreso", progreso)
 
-    else:
+    elif role == "supervisor":
+
+        col1.metric("Mi equipo", total_equipo)
+        col2.metric("Evaluaciones", total_equipo)
+        col3.metric("Expertos", niveles["Experto"])
+        col4.metric("Competentes", niveles["Competente"])
+
+    if role == "admin":
 
         col1.metric("Promedio equipo", f"{promedio_equipo}/10")
         col2.metric("Evaluaciones", total_equipo)
@@ -2492,10 +2545,6 @@ if team_rows:
     """
 
     st.info(narrativa_equipo)
-
-else:
-
-    st.info("No hay datos suficientes para construir dashboard ejecutivo.")
 
 # --------------------------------
 # ➡️ BOTÓN NUEVA PREGUNTA
