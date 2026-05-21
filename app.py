@@ -2556,6 +2556,27 @@ else:
 
     if role in ["admin", "supervisor"]:
 
+        top_performer = max(
+            team_rows,
+            key=lambda x: x["avg_score"] or 0
+        )
+
+        nombre_top = top_performer["usuario"].split("@")[0]
+
+        st.markdown("### 🥇 Top Performer del equipo")
+
+        c1, c2 = st.columns(2)
+
+        c1.metric(
+            "Usuario",
+            nombre_top
+        )
+
+        c2.metric(
+            "Score",
+            f"{top_performer['avg_score']}/10"
+        )
+
         st.markdown("---")
         st.markdown("### 🏆 Ranking técnico del equipo")
 
@@ -2571,6 +2592,83 @@ else:
 
             st.write(
                 f"#{posicion} — {nombre} | Score: {usuario['avg_score']}/10"
+            )
+
+        st.markdown("---")
+        st.markdown("### 📊 Distribución organizacional")
+
+        exp_pct = round((niveles["Experto"]/total_equipo)*100,1)
+        comp_pct = round((niveles["Competente"]/total_equipo)*100,1)
+        bas_pct = round((niveles["Básico"]/total_equipo)*100,1)
+        def_pct = round((niveles["Deficiente"]/total_equipo)*100,1)
+
+        d1, d2, d3, d4 = st.columns(4)
+
+        d1.metric(
+            "Expertos",
+            f"{exp_pct}%"
+        )
+
+        d2.metric(
+            "Competentes",
+            f"{comp_pct}%"
+        )
+
+        d3.metric(
+            "Básicos",
+            f"{bas_pct}%"
+        )
+
+        d4.metric(
+            "Deficientes",
+            f"{def_pct}%"
+        )
+        
+    if role in ["user", "supervisor"]:
+
+        ranking_source = get_team_dashboard(
+            "admin",
+            st.session_state["user"]["id"]
+        )
+
+        ranking_total = sorted(
+            ranking_source,
+            key=lambda x: x["avg_score"] or 0,
+            reverse=True
+        )
+
+        mi_id = st.session_state["user"]["id"]
+
+        posicion = next(
+            (
+                i + 1
+                for i, u in enumerate(ranking_total)
+                if u["user_id"] == mi_id
+            ),
+            None
+        )
+
+        if posicion:
+
+            percentil = round(
+                ((len(ranking_total) - posicion + 1)
+                / len(ranking_total)) * 100,
+                1
+            )
+
+            st.markdown("---")
+            st.markdown("### 👤 Mi posición en el equipo")
+
+            p1, p2 = st.columns(2)
+
+            p1.metric(
+                "Posición",
+                f"#{posicion} de {len(ranking_total)}"
+            )
+
+            p2.metric(
+                "Percentil",
+                f"{percentil}%"
             )
 
 # --------------------------------
