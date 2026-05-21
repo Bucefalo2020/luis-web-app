@@ -1005,10 +1005,15 @@ def get_team_dashboard(role, user_id):
 
         cur.execute("""
             SELECT
-                user_id,
-                score,
-                feedback
-            FROM technical_evaluations
+                t.user_id,
+                u.email,
+                t.score,
+                t.feedback
+
+            FROM technical_evaluations t
+
+            JOIN users u
+            ON t.user_id = u.id
         """)
 
     else:
@@ -1037,6 +1042,7 @@ def get_team_dashboard(role, user_id):
 
             resultado.append({
                 "user_id": r["user_id"],
+                "usuario": r.get("email", "Sin nombre"),
                 "avg_score": r["score"],
                 "cobertura": feedback_json.get("cobertura", 0),
                 "precision": feedback_json.get("precision", 0),
@@ -2545,6 +2551,27 @@ else:
     """
 
     st.info(narrativa_equipo)
+    
+    role = st.session_state["user"]["role"]
+
+    if role in ["admin", "supervisor"]:
+
+        st.markdown("---")
+        st.markdown("### 🏆 Ranking técnico del equipo")
+
+        ranking = sorted(
+            team_rows,
+            key=lambda x: x["avg_score"] or 0,
+            reverse=True
+        )
+
+        for posicion, usuario in enumerate(ranking[:5], start=1):
+
+            nombre = usuario["usuario"].split("@")[0]
+
+            st.write(
+                f"#{posicion} — {nombre} | Score: {usuario['avg_score']}/10"
+            )
 
 # --------------------------------
 # ➡️ BOTÓN NUEVA PREGUNTA
