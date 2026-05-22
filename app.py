@@ -2585,6 +2585,22 @@ else:
             key=lambda x: x["avg_score"] or 0,
             reverse=True
         )
+        
+        top3 = ranking[:3]
+
+        st.markdown("### 🏅 Top 3 destacados")
+
+        medallas = ["🥇", "🥈", "🥉"]
+
+        for i, usuario in enumerate(top3):
+
+            nombre = usuario["usuario"].split("@")[0]
+
+            st.write(
+                f"{medallas[i]} {nombre} — {usuario['avg_score']}/10"
+            )
+
+        st.markdown("---")
 
         for posicion, usuario in enumerate(ranking[:5], start=1):
 
@@ -2636,6 +2652,16 @@ else:
             key=lambda x: x["avg_score"] or 0,
             reverse=True
         )
+        
+        top_source = get_team_dashboard(
+            "admin",
+            st.session_state["user"]["id"]
+        )
+
+        top_performer = max(
+            top_source,
+            key=lambda x: x["avg_score"] or 0
+        )
 
         mi_id = st.session_state["user"]["id"]
 
@@ -2669,6 +2695,49 @@ else:
             p2.metric(
                 "Percentil",
                 f"{percentil}%"
+            )
+            
+            if role == "supervisor":
+
+                score_actual = mi_score
+
+            else:
+
+                mi_datos = get_team_dashboard(
+                    "user",
+                    st.session_state["user"]["id"]
+                )
+
+                mi_dashboard = procesar_dashboard_equipo(
+                    mi_datos
+                )
+
+                score_actual = mi_dashboard["promedio_equipo"]
+
+
+            brecha_top = round(
+                score_actual - top_performer["avg_score"],
+                1
+            )
+
+            st.markdown("---")
+            st.markdown("### 🎯 Brecha vs líder")
+
+            b1, b2, b3 = st.columns(3)
+
+            b1.metric(
+                "Mi Score",
+                f"{score_actual}/10"
+            )
+
+            b2.metric(
+                "Top performer",
+                f"{top_performer['avg_score']}/10"
+            )
+
+            b3.metric(
+                "Brecha",
+                f"{brecha_top:+}"
             )
 
 # --------------------------------
