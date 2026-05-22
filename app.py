@@ -1056,6 +1056,38 @@ def get_team_dashboard(role, user_id):
 
     return resultado
 
+def get_user_trend(user_id, limit=5):
+
+    if not os.getenv("DATABASE_URL"):
+        return []
+
+    conn = get_db_connection()
+
+    cur = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
+
+    cur.execute("""
+        SELECT
+            score,
+            created_at
+
+        FROM technical_evaluations
+
+        WHERE user_id = %s
+
+        ORDER BY created_at DESC
+
+        LIMIT %s
+    """, (user_id, limit))
+
+    rows = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return rows
+
 def procesar_dashboard_equipo(rows):
 
     if not rows:
@@ -2739,6 +2771,51 @@ else:
                 "Brecha",
                 f"{brecha_top:+}"
             )
+            
+            trend_rows = get_user_trend(
+                st.session_state["user"]["id"]
+            )
+
+            if len(trend_rows) >= 1:
+
+                ultimo = trend_rows[0]["score"]
+
+                promedio_hist = round(
+                    sum(r["score"] for r in trend_rows)
+                    / len(trend_rows),
+                    1
+                )
+
+                if len(trend_rows) >= 2:
+
+                    variacion = round(
+                        ultimo - promedio_hist,
+                        1
+                    )
+
+                else:
+
+                    variacion = 0
+
+                st.markdown("---")
+                st.markdown("### 📈 Tendencia de desempeño")
+
+                t1, t2, t3 = st.columns(3)
+
+                t1.metric(
+                    "Último score",
+                    f"{ultimo}/10"
+                )
+
+                t2.metric(
+                    "Promedio histórico",
+                    f"{promedio_hist}/10"
+                )
+
+                t3.metric(
+                    "Variación",
+                    f"{variacion:+}"
+                )
 
 # --------------------------------
 # ➡️ BOTÓN NUEVA PREGUNTA
